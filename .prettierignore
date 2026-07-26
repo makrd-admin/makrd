@@ -1,0 +1,9 @@
+.next
+node_modules
+pnpm-lock.yaml
+supabase/.branches
+supabase/.temp
+
+# hand-authored project docs, not scaffold code
+CLAUDE.md
+PRODUCT.md

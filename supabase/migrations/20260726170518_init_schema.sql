@@ -1,0 +1,5 @@
+-- Placeholder migration. Intentionally empty.
+--
+-- The v1 schema (profiles, printers, jobs, points_ledger) and their RLS policies
+-- belong here — see CLAUDE.md "Data model" for the starting point. Not written yet;
+-- this file exists so `supabase db diff` / migration tooling has a base to work from.

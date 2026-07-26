@@ -32,7 +32,7 @@ Defaults chosen for a solo founder + Claude Code. Change any line and I'll adjus
 - Backend / DB / Auth / Storage: **Supabase** (Postgres, Auth, Storage, Row-Level Security)
 - Auth: Supabase Auth with the **Google OAuth** provider
 - Hosting: **Vercel** (frontend) + **Supabase cloud**
-- Package manager: **[pick one: npm or pnpm]**
+- Package manager: **pnpm**
 
 ## Data model (starting point — refine as we go)
 - `profiles` (extends `auth.users`): role(s), display name, location, points_balance
@@ -72,6 +72,24 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-26** — Scaffolded the repo from scratch: Next.js 16 (App Router) + TypeScript
+  strict + Tailwind v4, `@supabase/supabase-js` + `@supabase/ssr` client helpers
+  (`lib/supabase/client.ts` browser, `lib/supabase/server.ts` server), `.env.example`,
+  ESLint + Prettier (incl. Tailwind class sorting), `pnpm` scripts (dev/build/lint/typecheck/
+  format), Supabase CLI local workflow (`supabase/config.toml` + one empty placeholder
+  migration), and placeholder `/` + `/health` pages. Verified: `pnpm typecheck`, `pnpm lint`,
+  `pnpm format:check`, `pnpm build` all pass; dev server smoke-tested (`/` and `/health` both
+  return 200). Package manager: pnpm (confirmed). No schema written yet — next up is Google
+  OAuth wiring, then the initial migration (`profiles`, `printers`, `jobs`, `points_ledger` +
+  RLS).
+- **2026-07-26** — Jules (separate scaffolding agent) was stopped before doing any work.
+  Claude Code now owns the full build, starting from scratch: repo scaffold (Next.js +
+  Tailwind + Supabase plumbing) followed by Google OAuth wiring.
+- **2026-07-26** — Clarified division of labor: Jules is scaffolding the repo (Next.js/
+  Tailwind/Supabase plumbing) in a separate PR; Claude Code picks up feature work afterward,
+  starting with Google OAuth. Holding off on any scaffold/code changes until Jules's PR lands
+  to avoid conflicts — repo currently has no `package.json` yet. **(Superseded — see entry
+  above: Jules was stopped.)**
 - **2026-07-26** — Repo initialized from `mohit` branch (origin/mohit): brought in
   `CLAUDE.md`, `PRODUCT.md`, and brainstorm images. No code yet. Set up Claude's working
   agreement: keep this log current, changes to `PRODUCT.md` require approval first.
