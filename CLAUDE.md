@@ -65,3 +65,13 @@ so these can slot in later, but do not implement them now.
   has lasting impact; otherwise just proceed.
 - Prefer small, working, testable increments over big-bang changes.
 - When you finish a chunk, tell me exactly how to run and test it.
+- Keep this file updated as we build — log meaningful progress/decisions in the Progress
+  Log below. `PRODUCT.md` covers vision/strategy and is only edited with my explicit
+  approval; propose changes there rather than editing directly.
+
+## Progress Log
+_Newest first. One or two lines per entry — what changed and why, not a full diary._
+
+- **2026-07-26** — Repo initialized from `mohit` branch (origin/mohit): brought in
+  `CLAUDE.md`, `PRODUCT.md`, and brainstorm images. No code yet. Set up Claude's working
+  agreement: keep this log current, changes to `PRODUCT.md` require approval first.
