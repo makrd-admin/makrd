@@ -5,6 +5,7 @@ const LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/printers", label: "Printers" },
   { href: "/jobs", label: "Jobs" },
+  { href: "/community", label: "Community" },
 ];
 
 export default async function Nav() {

@@ -24,6 +24,22 @@ export default async function NewPrinterPage() {
           Build volume (optional, e.g. 220x220x250mm)
           <input name="build_volume" className={inputClass} />
         </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Location (optional, e.g. Koramangala, Bengaluru)
+          <input name="location" className={inputClass} />
+          <span className="text-xs text-neutral-500">
+            Helps nearby members find you — this is a P2P network, proximity matters.
+          </span>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Description (optional)
+          <textarea
+            name="description"
+            rows={3}
+            className={inputClass}
+            placeholder="e.g. well-maintained, prints daily, good for detailed miniatures"
+          />
+        </label>
         <fieldset className="flex flex-col gap-2 text-sm">
           <legend className="mb-1">Materials supported</legend>
           {MATERIALS.map((m) => (

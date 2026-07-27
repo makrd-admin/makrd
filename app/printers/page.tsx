@@ -54,12 +54,20 @@ export default async function PrintersPage({
                 </span>
                 <span className="text-xs text-neutral-500">{printer.model_id}</span>
               </div>
+              {printer.location && (
+                <p className="text-sm text-neutral-500">Location: {printer.location}</p>
+              )}
               {printer.build_volume && (
                 <p className="text-sm text-neutral-500">Build volume: {printer.build_volume}</p>
               )}
               {printer.materials.length > 0 && (
                 <p className="text-sm text-neutral-500">
                   Materials: {printer.materials.join(", ")}
+                </p>
+              )}
+              {printer.description && (
+                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                  {printer.description}
                 </p>
               )}
               <p className="text-xs text-neutral-400">Status: {printer.status}</p>

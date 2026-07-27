@@ -72,6 +72,30 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Google sign-in confirmed working end-to-end on the deployed site.
+  Working solo for a stretch while Mohit's away — built a real landing page (`/`, hero +
+  how-it-works + roadmap teaser, redirects signed-in users to `/dashboard` as before),
+  expanded `printers` with `location` and `description` columns (migration
+  `20260727120000_add_printer_location_and_description`, applied + local file synced,
+  `database.types.ts` updated and diffed against a fresh `generate_typescript_types` to
+  confirm exact match) since proximity matters a lot for a P2P network and the
+  registration form/list didn't have anywhere to put it. Added `/community` — a
+  directory of every active printer on the network (any member, not just your own),
+  which didn't exist before even though the RLS policy already allowed it; deliberately
+  selects columns explicitly there instead of `select("*")` so `code_word_hash` is never
+  fetched for printers that aren't the viewer's own. Added a root `app/error.tsx` so
+  Server Action failures (insufficient balance, job already taken, etc.) show a message
+  and a retry button instead of the default crash screen.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  dev server smoke-tested (`/`, `/community`, `/printers/new` all behave correctly
+  signed out; landing page content confirmed rendering).
+  **Known gap, not yet fixed:** thrown Server Action errors rely on Next.js forwarding
+  the message to `error.tsx` as-is — this is Next's actual behavior for action errors
+  (unlike render errors, which get redacted in production), but if that ever looks wrong
+  in practice, the fix is converting the riskier actions (`submitJob`, `createPrinter`)
+  to return `{ error }` via `useActionState` instead of throwing, for real inline form
+  errors rather than a full error-boundary swap.
+
 - **2026-07-27** — Migrated the Supabase project to a new account. The original project
   (`lbpzzecshsuriumwxesf`) was under `satyaanil1986@gmail.com`, which I don't have
   dashboard access to; switched to a project under `makrd.admin@gmail.com` instead

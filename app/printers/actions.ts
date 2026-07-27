@@ -12,6 +12,8 @@ export async function createPrinter(formData: FormData) {
   const make = String(formData.get("make") ?? "").trim();
   const model = String(formData.get("model") ?? "").trim();
   const buildVolume = String(formData.get("build_volume") ?? "").trim();
+  const location = String(formData.get("location") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
   const materials = formData.getAll("materials").map(String);
   const codeWord = String(formData.get("code_word") ?? "").trim();
 
@@ -30,6 +32,8 @@ export async function createPrinter(formData: FormData) {
     make,
     model,
     build_volume: buildVolume || null,
+    location: location || null,
+    description: description || null,
     materials,
     model_id: modelId,
     code_word_hash: codeWordHash,

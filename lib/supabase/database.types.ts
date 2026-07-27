@@ -109,7 +109,9 @@ export type Database = {
           build_volume: string | null;
           code_word_hash: string;
           created_at: string;
+          description: string | null;
           id: string;
+          location: string | null;
           make: string;
           materials: string[];
           model: string;
@@ -122,7 +124,9 @@ export type Database = {
           build_volume?: string | null;
           code_word_hash: string;
           created_at?: string;
+          description?: string | null;
           id?: string;
+          location?: string | null;
           make: string;
           materials?: string[];
           model: string;
@@ -135,7 +139,9 @@ export type Database = {
           build_volume?: string | null;
           code_word_hash?: string;
           created_at?: string;
+          description?: string | null;
           id?: string;
+          location?: string | null;
           make?: string;
           materials?: string[];
           model?: string;
