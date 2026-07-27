@@ -7,7 +7,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
 import { estimatePoints } from "@/lib/points";
 
-export async function submitJob(formData: FormData) {
+export type SubmitJobState = { error: string | null };
+
+export async function submitJob(
+  _prevState: SubmitJobState,
+  formData: FormData,
+): Promise<SubmitJobState> {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -16,18 +21,23 @@ export async function submitJob(formData: FormData) {
   const file = formData.get("model_file");
 
   if (!(file instanceof File) || file.size === 0) {
-    throw new Error("A model file is required");
+    return { error: "A model file is required" };
   }
 
   // Client-side estimate for UX only — the database recomputes and enforces
   // the real price server-side (see the set_job_points trigger), so this
   // value can't be tampered with in transit.
-  const estPoints = estimatePoints(material, quantity);
+  let estPoints: number;
+  try {
+    estPoints = estimatePoints(material, quantity);
+  } catch {
+    return { error: "Pick a valid material and quantity" };
+  }
 
   const path = `${user.id}/${randomUUID()}-${file.name}`;
   const { error: uploadError } = await supabase.storage.from("job-files").upload(path, file);
   if (uploadError) {
-    throw new Error(uploadError.message);
+    return { error: uploadError.message };
   }
 
   const { error: insertError } = await supabase.from("jobs").insert({
@@ -40,7 +50,7 @@ export async function submitJob(formData: FormData) {
 
   if (insertError) {
     await supabase.storage.from("job-files").remove([path]);
-    throw new Error(insertError.message);
+    return { error: insertError.message };
   }
 
   revalidatePath("/jobs");

@@ -5,7 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
 import { generateModelId, hashCodeWord } from "@/lib/printers";
 
-export async function createPrinter(formData: FormData) {
+export type CreatePrinterState = { error: string | null };
+
+export async function createPrinter(
+  _prevState: CreatePrinterState,
+  formData: FormData,
+): Promise<CreatePrinterState> {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -18,10 +23,10 @@ export async function createPrinter(formData: FormData) {
   const codeWord = String(formData.get("code_word") ?? "").trim();
 
   if (!make || !model) {
-    throw new Error("Make and model are required");
+    return { error: "Make and model are required" };
   }
   if (codeWord.length < 6) {
-    throw new Error("Code word must be at least 6 characters");
+    return { error: "Code word must be at least 6 characters" };
   }
 
   const modelId = generateModelId();
@@ -40,7 +45,10 @@ export async function createPrinter(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    if (error.code === "23505") {
+      return { error: "That model ID collided with an existing one — please try again" };
+    }
+    return { error: error.message };
   }
 
   redirect(`/printers?created=${encodeURIComponent(modelId)}`);

@@ -29,14 +29,31 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const isRequester = job.requester_id === user.id;
   const isProvider = job.provider_id === user.id;
 
+  let fileUrl: string | null = null;
+  if (isRequester || isProvider) {
+    const { data: signed } = await supabase.storage
+      .from("job-files")
+      .createSignedUrl(job.model_file, 60 * 60);
+    fileUrl = signed?.signedUrl ?? null;
+  }
+
   return (
     <main className="mx-auto max-w-lg p-8">
       <h1 className="mb-2 text-xl font-semibold">
         {job.material} × {job.quantity}
       </h1>
-      <p className="mb-6 text-sm text-neutral-500">
+      <p className="mb-4 text-sm text-neutral-500">
         {job.est_points} pts · Status: {STATUS_LABELS[job.status] ?? job.status}
       </p>
+
+      {fileUrl && (
+        <a
+          href={fileUrl}
+          className="mb-6 inline-block text-sm font-medium underline underline-offset-2"
+        >
+          Download model file
+        </a>
+      )}
 
       <div className="flex flex-col gap-3">
         {job.status === "submitted" && !isRequester && (

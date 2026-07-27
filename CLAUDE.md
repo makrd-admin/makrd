@@ -72,6 +72,21 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Continuing solo. Fixed a real functional gap on `/jobs/[id]`: there
+  was no way for the requester or assigned provider to actually get the uploaded model
+  file — added a "Download model file" link via a signed Storage URL (1hr expiry),
+  generated server-side so it only succeeds if the viewer passes the existing
+  owner-or-assigned-provider Storage RLS policy. Also converted the two forms most
+  likely to hit expected validation failures — job submission and printer registration —
+  from throw-and-crash to `useActionState` with inline error messages (insufficient
+  balance, bad material/quantity, duplicate model ID, etc. now show inline instead of
+  swapping to the full error boundary); this closes the "known gap" noted in the
+  previous entry for those two actions specifically. The five job-status RPCs
+  (accept/start/verify/complete/cancel) still throw to `error.tsx` — lower value to
+  convert since they're single-button actions, not forms with recoverable input.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  dev server smoke-tested.
+
 - **2026-07-27** — Google sign-in confirmed working end-to-end on the deployed site.
   Working solo for a stretch while Mohit's away — built a real landing page (`/`, hero +
   how-it-works + roadmap teaser, redirects signed-in users to `/dashboard` as before),
