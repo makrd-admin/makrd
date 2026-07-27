@@ -72,6 +72,26 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Wrapping this solo stretch here. Last thing done: every route had the
+  same "makrd" browser tab title — added per-page `metadata` (Dashboard, My Printers,
+  Register a Printer, Open Jobs, Submit a Job, Job Details, Community, Profile, Health).
+  Skipped `/login` — it's a client component (`"use client"` for the sign-in `onClick`),
+  and splitting it just for a title felt like the wrong trade right now.
+  Full route smoke test run after every change tonight — all public routes 200, all
+  protected routes correctly 307 to `/login` signed out, landing page content confirmed
+  rendering, no server errors in the dev log across ~7 rounds of typecheck/lint/format/
+  build + dev-server checks.
+  **Where things stand for v1 scope:** the full core loop (auth, register printer,
+  submit job, browse/accept, points ledger, status tracking incl. release-back-to-
+  marketplace, dashboard) is built and verified locally against the new Supabase
+  project. Plus this session added a real landing page, a community printer directory,
+  a profile page, and inline form errors. **Not verified: the actual browser OAuth round
+  trip against the live Vercel deployment** — that needs Mohit (or anyone) to click
+  through it once Vercel's env vars are confirmed current; I can't do that myself from
+  here. Also still open: the `useActionState` inline-error treatment only covers job
+  submission and printer registration, not the five single-button job-status RPCs
+  (those still throw to `error.tsx`) — fine for now, lower value to convert.
+
 - **2026-07-27** — Printers could be registered but never paused or reactivated — once
   created they were permanently `active` with no UI to change that, even though
   `/community` only lists active ones. Added a Pause/Reactivate toggle on `/printers`.

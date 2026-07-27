@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { acceptJob } from "./actions";
+
+export const metadata: Metadata = { title: "Open Jobs · makrd" };
 
 export default async function JobsPage() {
   const user = await requireUser();

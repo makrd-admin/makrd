@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { updateProfile } from "./actions";
+
+export const metadata: Metadata = { title: "Profile · makrd" };
 
 const inputClass =
   "rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-950";

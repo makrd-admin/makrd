@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -9,6 +10,8 @@ import {
   markVerification,
   completeJob,
 } from "../actions";
+
+export const metadata: Metadata = { title: "Job Details · makrd" };
 
 const STATUS_LABELS: Record<string, string> = {
   submitted: "Submitted",

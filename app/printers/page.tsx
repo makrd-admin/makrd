@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { setPrinterStatus } from "./actions";
+
+export const metadata: Metadata = { title: "My Printers · makrd" };
 
 export default async function PrintersPage({
   searchParams,

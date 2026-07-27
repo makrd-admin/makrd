@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Community · makrd" };
 
 export default async function CommunityPage() {
   await requireUser();

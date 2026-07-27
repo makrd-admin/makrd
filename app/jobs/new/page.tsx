@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import JobForm from "./job-form";
+
+export const metadata: Metadata = { title: "Submit a Job · makrd" };
 
 export default async function NewJobPage() {
   await requireUser();

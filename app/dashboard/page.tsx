@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Dashboard · makrd" };
 
 const STATUS_LABELS: Record<string, string> = {
   submitted: "Submitted",
