@@ -2,10 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { MATERIALS } from "@/lib/points";
+import { GLASS_INPUT } from "@/lib/ui";
 import { submitJob, type SubmitJobState } from "../actions";
-
-const inputClass =
-  "rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-950";
 
 const initialState: SubmitJobState = { error: null };
 
@@ -18,7 +16,7 @@ export default function JobForm() {
   const estimate = rate * Math.max(1, quantity || 1);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="glass-strong flex flex-col gap-4 rounded-3xl p-8">
       <label className="flex flex-col gap-1 text-sm">
         Model file
         <input type="file" name="model_file" required className="text-sm" />
@@ -29,7 +27,7 @@ export default function JobForm() {
           name="material"
           value={material}
           onChange={(e) => setMaterial(e.target.value)}
-          className={inputClass}
+          className={GLASS_INPUT}
         >
           {MATERIALS.map((m) => (
             <option key={m.value} value={m.value}>
@@ -46,15 +44,15 @@ export default function JobForm() {
           min={1}
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value))}
-          className={inputClass}
+          className={GLASS_INPUT}
         />
       </label>
-      <p className="text-sm text-neutral-500">
-        Estimated cost: <strong>{estimate} pts</strong>
+      <p className="glass rounded-xl px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
+        Estimated cost: <strong className="text-gradient">{estimate} pts</strong>
       </p>
 
       {state.error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/60 dark:text-red-300">
           {state.error}
         </p>
       )}
@@ -62,7 +60,7 @@ export default function JobForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+        className="btn-gradient rounded-full px-4 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50"
       >
         {isPending ? "Submitting…" : "Submit job"}
       </button>

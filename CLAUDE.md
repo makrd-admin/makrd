@@ -72,6 +72,20 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Visual overhaul, part 2 (interior pages). Extended the liquid-glass
+  treatment from part 1 to every authenticated page: dashboard (points balance now a
+  hero stat tile), printers list + registration form, jobs marketplace + submission
+  form + detail page, community directory, profile, and the error/auth-error pages.
+  Pulled repeated class strings into `lib/ui.ts` (`GLASS_INPUT`, `BTN_PRIMARY`,
+  `BTN_SECONDARY`) instead of copy-pasting the same long Tailwind strings into every
+  form — five files were already duplicating the input styling verbatim before this.
+  Full app now looks like one cohesive product front-to-back rather than a fancy
+  landing page bolted onto a plain interior.
+  Verified: typecheck/lint/format/build all pass; full route smoke test (public routes
+  200, all 7 protected routes confirmed still redirecting via the
+  `__next-page-redirect` marker per the note in the previous entry, no server errors in
+  the dev log across either design pass tonight).
+
 - **2026-07-27** — Visual overhaul, part 1 (foundation + front door). Mohit asked for a
   "liquid glass" look, a professional sign-in, loading animations, and a first-visit
   tutorial. Built as pure CSS/SVG — no framer-motion or animation library added, to keep

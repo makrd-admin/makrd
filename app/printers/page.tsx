@@ -31,41 +31,46 @@ export default async function PrintersPage({
         <h1 className="text-xl font-semibold">My printers</h1>
         <Link
           href="/printers/new"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+          className="btn-gradient rounded-full px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           Register a printer
         </Link>
       </div>
 
       {created && (
-        <p className="mb-4 rounded-md bg-green-50 px-4 py-2 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">
+        <p className="glass mb-4 rounded-xl px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">
           Printer registered — model ID <strong>{created}</strong>.
         </p>
       )}
 
       {printers.length === 0 ? (
-        <p className="text-neutral-500">No printers yet.</p>
+        <p className="glass rounded-2xl p-6 text-center text-neutral-500 dark:text-neutral-400">
+          No printers yet.
+        </p>
       ) : (
         <ul className="flex flex-col gap-3">
           {printers.map((printer) => (
-            <li
-              key={printer.id}
-              className="rounded-md border border-neutral-200 p-4 dark:border-neutral-800"
-            >
+            <li key={printer.id} className="glass rounded-2xl p-5">
               <div className="flex items-center justify-between">
                 <span className="font-medium">
                   {printer.make} {printer.model}
                 </span>
-                <span className="text-xs text-neutral-500">{printer.model_id}</span>
+                <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
+                  {printer.model_id}
+                </span>
               </div>
               {printer.location && (
-                <p className="text-sm text-neutral-500">Location: {printer.location}</p>
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  Location: {printer.location}
+                </p>
               )}
               {printer.build_volume && (
-                <p className="text-sm text-neutral-500">Build volume: {printer.build_volume}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Build volume: {printer.build_volume}
+                </p>
               )}
               {printer.materials.length > 0 && (
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Materials: {printer.materials.join(", ")}
                 </p>
               )}
@@ -74,8 +79,10 @@ export default async function PrintersPage({
                   {printer.description}
                 </p>
               )}
-              <div className="mt-2 flex items-center justify-between">
-                <p className="text-xs text-neutral-400">Status: {printer.status}</p>
+              <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-3 dark:border-white/10">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  Status: {printer.status}
+                </p>
                 <form
                   action={setPrinterStatus.bind(
                     null,

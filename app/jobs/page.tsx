@@ -27,31 +27,32 @@ export default async function JobsPage() {
         <h1 className="text-xl font-semibold">Open jobs</h1>
         <Link
           href="/jobs/new"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+          className="btn-gradient rounded-full px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           Submit a job
         </Link>
       </div>
 
       {jobs.length === 0 ? (
-        <p className="text-neutral-500">No open jobs right now.</p>
+        <p className="glass rounded-2xl p-6 text-center text-neutral-500 dark:text-neutral-400">
+          No open jobs right now.
+        </p>
       ) : (
         <ul className="flex flex-col gap-3">
           {jobs.map((job) => (
-            <li
-              key={job.id}
-              className="flex items-center justify-between rounded-md border border-neutral-200 p-4 dark:border-neutral-800"
-            >
+            <li key={job.id} className="glass flex items-center justify-between rounded-2xl p-5">
               <div>
                 <p className="font-medium">
                   {job.material} × {job.quantity}
                 </p>
-                <p className="text-sm text-neutral-500">{job.est_points} pts</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {job.est_points} pts
+                </p>
               </div>
               <form action={acceptJob.bind(null, job.id)}>
                 <button
                   type="submit"
-                  className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+                  className="btn-gradient rounded-full px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
                 >
                   Accept
                 </button>

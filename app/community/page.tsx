@@ -25,31 +25,34 @@ export default async function CommunityPage() {
   return (
     <main className="mx-auto max-w-2xl p-8">
       <h1 className="mb-2 text-xl font-semibold">Community printers</h1>
-      <p className="mb-6 text-sm text-neutral-500">
+      <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
         Every printer registered on the network. Submit a job and one of these members can pick it
         up.
       </p>
 
       {printers.length === 0 ? (
-        <p className="text-neutral-500">No printers registered yet — be the first.</p>
+        <p className="glass rounded-2xl p-6 text-center text-neutral-500 dark:text-neutral-400">
+          No printers registered yet — be the first.
+        </p>
       ) : (
         <ul className="flex flex-col gap-3">
           {printers.map((printer) => (
-            <li
-              key={printer.id}
-              className="rounded-md border border-neutral-200 p-4 dark:border-neutral-800"
-            >
+            <li key={printer.id} className="glass rounded-2xl p-5">
               <div className="flex items-center justify-between">
                 <span className="font-medium">
                   {printer.make} {printer.model}
                 </span>
-                <span className="text-xs text-neutral-500">
+                <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
                   {printer.owner?.display_name ?? "A makrd member"}
                 </span>
               </div>
-              {printer.location && <p className="text-sm text-neutral-500">{printer.location}</p>}
+              {printer.location && (
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  {printer.location}
+                </p>
+              )}
               {printer.materials.length > 0 && (
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Materials: {printer.materials.join(", ")}
                 </p>
               )}

@@ -39,13 +39,21 @@ export default async function DashboardPage() {
     ]);
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-10 p-8">
-      <section>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-neutral-500">Points balance: {profile?.points_balance ?? 0}</p>
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 p-8">
+      <section className="glass-strong flex items-center justify-between rounded-3xl p-8">
+        <div>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Everything you own and everything you owe, in one place.
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-gradient text-3xl font-semibold">{profile?.points_balance ?? 0}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">points</p>
+        </div>
       </section>
 
-      <section>
+      <section className="glass rounded-2xl p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">My printers</h2>
           <Link href="/printers" className="text-sm text-neutral-500 hover:underline">
@@ -53,7 +61,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {!printers || printers.length === 0 ? (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             No printers registered yet.{" "}
             <Link href="/printers/new" className="underline">
               Register one
@@ -64,14 +72,15 @@ export default async function DashboardPage() {
           <ul className="flex flex-col gap-2">
             {printers.map((p) => (
               <li key={p.id} className="text-sm">
-                {p.make} {p.model} <span className="text-neutral-400">({p.model_id})</span>
+                {p.make} {p.model}{" "}
+                <span className="text-neutral-400 dark:text-neutral-500">({p.model_id})</span>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section>
+      <section className="glass rounded-2xl p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Jobs I&apos;ve submitted</h2>
           <Link href="/jobs/new" className="text-sm text-neutral-500 hover:underline">
@@ -79,19 +88,19 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {!myJobs || myJobs.length === 0 ? (
-          <p className="text-sm text-neutral-500">No jobs submitted yet.</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">No jobs submitted yet.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {myJobs.map((job) => (
               <li key={job.id}>
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="flex items-center justify-between rounded-md border border-neutral-200 p-3 text-sm hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
+                  className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   <span>
                     {job.material} × {job.quantity} · {job.est_points} pts
                   </span>
-                  <span className="text-neutral-500">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     {STATUS_LABELS[job.status] ?? job.status}
                   </span>
                 </Link>
@@ -101,7 +110,7 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      <section>
+      <section className="glass rounded-2xl p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Jobs I&apos;m printing</h2>
           <Link href="/jobs" className="text-sm text-neutral-500 hover:underline">
@@ -109,19 +118,21 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {!jobsImPrinting || jobsImPrinting.length === 0 ? (
-          <p className="text-sm text-neutral-500">You&apos;re not printing anything right now.</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            You&apos;re not printing anything right now.
+          </p>
         ) : (
           <ul className="flex flex-col gap-2">
             {jobsImPrinting.map((job) => (
               <li key={job.id}>
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="flex items-center justify-between rounded-md border border-neutral-200 p-3 text-sm hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
+                  className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   <span>
                     {job.material} × {job.quantity} · {job.est_points} pts
                   </span>
-                  <span className="text-neutral-500">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     {STATUS_LABELS[job.status] ?? job.status}
                   </span>
                 </Link>

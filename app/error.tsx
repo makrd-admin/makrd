@@ -1,5 +1,7 @@
 "use client";
 
+import { BTN_PRIMARY } from "@/lib/ui";
+
 export default function Error({
   error,
   reset,
@@ -8,15 +10,14 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-xl font-semibold">Something went wrong</h1>
-      <p className="max-w-md text-sm text-neutral-500">{error.message}</p>
-      <button
-        onClick={reset}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-      >
-        Try again
-      </button>
+    <main className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+      <div className="glass-strong flex flex-col items-center gap-4 rounded-3xl p-10">
+        <h1 className="text-xl font-semibold">Something went wrong</h1>
+        <p className="max-w-md text-sm text-neutral-500 dark:text-neutral-400">{error.message}</p>
+        <button onClick={reset} className={BTN_PRIMARY}>
+          Try again
+        </button>
+      </div>
     </main>
   );
 }
