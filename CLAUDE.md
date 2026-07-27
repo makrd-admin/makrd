@@ -72,6 +72,32 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-26** — Wrote and applied the v1 schema migration (`profiles`, `printers`, `jobs`,
+  `points_ledger`, all with RLS policies + a trigger that auto-creates a `profiles` row on
+  signup) to the live Supabase project (`lbpzzecshsuriumwxesf`, restored from paused).
+  `get_advisors` (security) came back clean — no missing-RLS or other lints. Local migration
+  file renamed to match the remote-applied version
+  (`supabase/migrations/20260726173040_init_schema.sql`). No local Docker available, so this
+  was applied directly to the remote project via the Supabase MCP tools rather than tested
+  against a local stack first.
+  Also scaffolded Google OAuth end-to-end: `proxy.ts` (Next 16 renamed `middleware.ts` →
+  `proxy.ts`, exported function must be named `proxy` not `middleware`) refreshes the Supabase
+  session on every request via `lib/supabase/middleware.ts`; `/login` triggers
+  `signInWithOAuth({ provider: "google" })`; `/auth/callback` exchanges the code for a
+  session; `/auth/signout` (POST) signs out; `/auth/auth-error` handles failures; `/` is now a
+  server component showing signed-in/out state. Added `[auth.external.google]` to
+  `supabase/config.toml` for local-CLI parity (reads
+  `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`/`_SECRET` env vars, not yet set anywhere). Created
+  `.env.local` (gitignored) with the real project's public URL + anon key so the dev server
+  could be smoke-tested against the live project. Verified: `pnpm typecheck`, `pnpm lint`,
+  `pnpm format:check`, `pnpm build` all pass; dev server smoke-tested — `/`, `/login`,
+  `/health` all return 200, `/` correctly shows the signed-out "Sign in" state.
+  **Not done yet / blocked on the user:** no Google Cloud OAuth client (Client ID + Secret)
+  exists yet — that has to be created in Google Cloud Console (requires the user's Google
+  account) and then entered in the Supabase dashboard under Authentication → Providers →
+  Google, whitelisting the callback URL. Sign-in cannot be fully tested end-to-end until
+  that's done. Session paused here — resume by walking through Google Cloud OAuth client
+  setup next.
 - **2026-07-26** — Scaffolded the repo from scratch: Next.js 16 (App Router) + TypeScript
   strict + Tailwind v4, `@supabase/supabase-js` + `@supabase/ssr` client helpers
   (`lib/supabase/client.ts` browser, `lib/supabase/server.ts` server), `.env.example`,
