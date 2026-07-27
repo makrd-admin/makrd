@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
 import { generateModelId, hashCodeWord } from "@/lib/printers";
@@ -52,4 +53,22 @@ export async function createPrinter(
   }
 
   redirect(`/printers?created=${encodeURIComponent(modelId)}`);
+}
+
+export async function setPrinterStatus(printerId: string, status: "active" | "inactive") {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("printers")
+    .update({ status })
+    .eq("id", printerId)
+    .eq("owner_id", user.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/printers");
+  revalidatePath("/community");
 }

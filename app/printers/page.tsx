@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { setPrinterStatus } from "./actions";
 
 export default async function PrintersPage({
   searchParams,
@@ -70,7 +71,23 @@ export default async function PrintersPage({
                   {printer.description}
                 </p>
               )}
-              <p className="text-xs text-neutral-400">Status: {printer.status}</p>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-xs text-neutral-400">Status: {printer.status}</p>
+                <form
+                  action={setPrinterStatus.bind(
+                    null,
+                    printer.id,
+                    printer.status === "active" ? "inactive" : "active",
+                  )}
+                >
+                  <button
+                    type="submit"
+                    className="text-xs font-medium underline underline-offset-2 hover:text-neutral-700 dark:hover:text-neutral-300"
+                  >
+                    {printer.status === "active" ? "Pause" : "Reactivate"}
+                  </button>
+                </form>
+              </div>
             </li>
           ))}
         </ul>

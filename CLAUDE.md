@@ -72,6 +72,14 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Printers could be registered but never paused or reactivated — once
+  created they were permanently `active` with no UI to change that, even though
+  `/community` only lists active ones. Added a Pause/Reactivate toggle on `/printers`.
+  No migration or RPC needed here: unlike jobs/profiles, an owner freely editing their
+  own printer row isn't a fraud vector (no other party's points are at stake), so the
+  existing owner-scoped UPDATE policy already covers it safely — used a plain
+  `setPrinterStatus` server action. Verified typecheck/lint/format/build.
+
 - **2026-07-27** — Closed another stuck-state gap: a provider who accepts a job then
   can't actually do it had no way back — status only ever moved forward. Added a
   `release_job` RPC (`accepted` → back to `submitted`, clears `provider_id`, provider-
