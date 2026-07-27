@@ -41,7 +41,9 @@ export default async function Nav() {
         ))}
       </nav>
       <div className="flex items-center gap-4 text-sm">
-        <span className="text-neutral-500">{profile?.points_balance ?? 0} pts</span>
+        <Link href="/profile" className="text-neutral-500 hover:underline">
+          {profile?.points_balance ?? 0} pts
+        </Link>
         <form action="/auth/signout" method="post">
           <button
             type="submit"

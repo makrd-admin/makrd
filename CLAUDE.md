@@ -72,6 +72,13 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Added `/profile` — `profiles.display_name`/`location` existed in the
+  schema since the first migration but had no UI to edit them. Nav's points-balance
+  display is now a link there. No schema change needed (RLS already permits users to
+  update their own profile row; the `protect_points_balance` trigger only blocks changes
+  to `points_balance` specifically, not other columns). Verified typecheck/lint/format/
+  build and a dev-server smoke test.
+
 - **2026-07-27** — Continuing solo. Fixed a real functional gap on `/jobs/[id]`: there
   was no way for the requester or assigned provider to actually get the uploaded model
   file — added a "Download model file" link via a signed Storage URL (1hr expiry),
