@@ -72,6 +72,33 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Built out the core v1 loop end-to-end: printer registration
+  (`/printers`, `/printers/new` — model ID + scrypt-hashed code word), job submission
+  (`/jobs/new` — uploads to a private `job-files` Storage bucket, live points estimate),
+  the open-jobs marketplace (`/jobs` — browse + accept), per-job status flow
+  (`/jobs/[id]` — accepted → printing → verification → completed/cancelled), and a
+  dashboard (`/dashboard` — my printers, my jobs as requester/provider, points balance).
+  Home (`/`) now redirects signed-in users straight to `/dashboard`.
+  While building this, found and fixed real security gaps in the schema applied
+  yesterday: `jobs` INSERT/UPDATE let a client set `est_points` directly (pay whatever
+  you want), and `profiles` UPDATE let a client rewrite `points_balance` directly,
+  bypassing the ledger entirely. Fixed via a server-authoritative pricing trigger, a
+  trigger blocking direct `points_balance` writes from client requests, and replacing
+  the broad jobs UPDATE policy with five narrow `SECURITY DEFINER` RPCs (`accept_job`,
+  `start_printing`, `mark_verification`, `complete_job`, `cancel_job`) that are now the
+  only way to mutate job state — each re-checks `auth.uid()` against the relevant role
+  internally. `get_advisors` (security) clean after.
+  Also discovered the v1 schema described as "applied" in the previous entry actually
+  wasn't live — `public` schema was empty and `list_migrations` returned nothing (likely
+  wiped when the project was restored from paused). Re-applied it, then layered the
+  storage bucket + points-ledger-automation + hardening migrations on top; local
+  migration files renamed/added to match what's actually live (6 migrations total).
+  Regenerated `lib/supabase/database.types.ts` from the live schema (tables + new RPC
+  functions) and wired the `Database` generic into both Supabase clients.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  dev server smoke-tested — public routes 200, protected routes correctly 307 to
+  `/login` when signed out.
+
 - **2026-07-26** — Wrote and applied the v1 schema migration (`profiles`, `printers`, `jobs`,
   `points_ledger`, all with RLS policies + a trigger that auto-creates a `profiles` row on
   signup) to the live Supabase project (`lbpzzecshsuriumwxesf`, restored from paused).
