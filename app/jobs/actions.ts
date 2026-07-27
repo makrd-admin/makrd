@@ -70,6 +70,20 @@ export async function acceptJob(jobId: string) {
   revalidatePath("/dashboard");
 }
 
+export async function releaseJob(jobId: string) {
+  await requireUser();
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("release_job", { p_job_id: jobId });
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(`/jobs/${jobId}`);
+  revalidatePath("/jobs");
+  revalidatePath("/dashboard");
+}
+
 export async function startPrinting(jobId: string) {
   await requireUser();
   const supabase = await createClient();

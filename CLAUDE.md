@@ -72,6 +72,16 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Closed another stuck-state gap: a provider who accepts a job then
+  can't actually do it had no way back — status only ever moved forward. Added a
+  `release_job` RPC (`accepted` → back to `submitted`, clears `provider_id`, provider-
+  only, same security-definer pattern as the other five job RPCs) plus a "release back
+  to the marketplace" button next to "Start printing" on `/jobs/[id]`. Also checked
+  `get_advisors`: only the expected "authenticated can call this RPC" warnings (by
+  design, each RPC re-checks `auth.uid()` internally) plus one unrelated
+  `auth_leaked_password_protection` warning — not applicable, this app is Google-OAuth
+  only, no passwords. `database.types.ts` updated. Verified typecheck/lint/format/build.
+
 - **2026-07-27** — Added `/profile` — `profiles.display_name`/`location` existed in the
   schema since the first migration but had no UI to edit them. Nav's points-balance
   display is now a link there. No schema change needed (RLS already permits users to

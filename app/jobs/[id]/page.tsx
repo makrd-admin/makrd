@@ -1,7 +1,14 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { acceptJob, cancelJob, startPrinting, markVerification, completeJob } from "../actions";
+import {
+  acceptJob,
+  cancelJob,
+  releaseJob,
+  startPrinting,
+  markVerification,
+  completeJob,
+} from "../actions";
 
 const STATUS_LABELS: Record<string, string> = {
   submitted: "Submitted",
@@ -79,14 +86,24 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {job.status === "accepted" && isProvider && (
-          <form action={startPrinting.bind(null, job.id)}>
-            <button
-              type="submit"
-              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-            >
-              Start printing
-            </button>
-          </form>
+          <>
+            <form action={startPrinting.bind(null, job.id)}>
+              <button
+                type="submit"
+                className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+              >
+                Start printing
+              </button>
+            </form>
+            <form action={releaseJob.bind(null, job.id)}>
+              <button
+                type="submit"
+                className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+              >
+                Can&apos;t do it — release back to the marketplace
+              </button>
+            </form>
+          </>
         )}
 
         {job.status === "printing" && isProvider && (

@@ -196,6 +196,7 @@ export type Database = {
       cancel_job: { Args: { p_job_id: string }; Returns: undefined };
       complete_job: { Args: { p_job_id: string }; Returns: undefined };
       mark_verification: { Args: { p_job_id: string }; Returns: undefined };
+      release_job: { Args: { p_job_id: string }; Returns: undefined };
       start_printing: { Args: { p_job_id: string }; Returns: undefined };
     };
     Enums: {
