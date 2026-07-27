@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f6fb;
+  --foreground: #14141c;
+
+  /* Liquid-glass surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(20, 20, 28, 0.08);
+  --glass-shadow: rgba(20, 20, 28, 0.08);
+
+  /* Brand accents — indigo/violet (tech) + amber (hot filament) */
+  --accent-from: #6366f1;
+  --accent-via: #a855f7;
+  --accent-to: #ec4899;
+  --accent-warm: #f59e0b;
+
+  --blob-1: #818cf8;
+  --blob-2: #f0abfc;
+  --blob-3: #fbbf24;
 }
 
 @theme inline {
@@ -14,13 +30,237 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #08080d;
+    --foreground: #f2f2f7;
+
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-bg-strong: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: rgba(0, 0, 0, 0.5);
+
+    --blob-1: #4338ca;
+    --blob-2: #86198f;
+    --blob-3: #b45309;
   }
+}
+
+* {
+  border-color: var(--glass-border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ---------------------------------------------------------------------
+   Ambient background: soft drifting gradient blobs behind everything.
+   Fixed + pointer-events-none so it never interferes with content.
+   --------------------------------------------------------------------- */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-bg::before,
+.ambient-bg::after,
+.ambient-bg .blob-3 {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.45;
+}
+
+.ambient-bg::before {
+  width: 34rem;
+  height: 34rem;
+  top: -10rem;
+  left: -8rem;
+  background: var(--blob-1);
+  animation: drift-1 22s ease-in-out infinite;
+}
+
+.ambient-bg::after {
+  width: 30rem;
+  height: 30rem;
+  bottom: -8rem;
+  right: -6rem;
+  background: var(--blob-2);
+  animation: drift-2 26s ease-in-out infinite;
+}
+
+.ambient-bg .blob-3 {
+  width: 24rem;
+  height: 24rem;
+  top: 40%;
+  left: 55%;
+  background: var(--blob-3);
+  opacity: 0.28;
+  animation: drift-3 30s ease-in-out infinite;
+}
+
+@keyframes drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6rem, 8rem) scale(1.15);
+  }
+}
+
+@keyframes drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-5rem, -6rem) scale(1.1);
+  }
+}
+
+@keyframes drift-3 {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-bg::before,
+  .ambient-bg::after,
+  .ambient-bg .blob-3 {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Glass surfaces
+   --------------------------------------------------------------------- */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 8px 32px var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 16px 48px var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, var(--accent-from), var(--accent-via), var(--accent-to));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.btn-gradient {
+  background: linear-gradient(120deg, var(--accent-from), var(--accent-via), var(--accent-to));
+  background-size: 160% 160%;
+  animation: gradient-pan 6s ease infinite;
+  box-shadow: 0 8px 24px -8px rgba(168, 85, 247, 0.6);
+}
+
+@keyframes gradient-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-gradient {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Printer loader: nozzle sweeping over a boat hull that fills upward.
+   --------------------------------------------------------------------- */
+@keyframes nozzle-sweep {
+  0%,
+  100% {
+    transform: translateX(-46px);
+  }
+  50% {
+    transform: translateX(46px);
+  }
+}
+
+@keyframes nozzle-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes hull-fill {
+  0% {
+    transform: scaleY(0);
+  }
+  85%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes layer-glow {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.printer-loader-nozzle {
+  animation: nozzle-sweep 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.printer-loader-glow {
+  animation: nozzle-glow 1.2s ease-in-out infinite;
+}
+
+.printer-loader-hull {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: hull-fill 4.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.printer-loader-layer {
+  animation: layer-glow 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .printer-loader-nozzle,
+  .printer-loader-hull,
+  .printer-loader-glow,
+  .printer-loader-layer {
+    animation: none;
+  }
 }

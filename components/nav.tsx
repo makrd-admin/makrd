@@ -25,34 +25,39 @@ export default async function Nav() {
     .single();
 
   return (
-    <header className="flex items-center justify-between border-b border-neutral-200 px-6 py-3 dark:border-neutral-800">
-      <nav className="flex items-center gap-4">
-        <Link href="/dashboard" className="font-semibold">
-          makrd
-        </Link>
-        {LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-          >
-            {link.label}
+    <div className="sticky top-4 z-40 flex justify-center px-4">
+      <header className="glass-strong flex w-full max-w-4xl items-center justify-between rounded-2xl px-5 py-2.5">
+        <nav className="flex items-center gap-1">
+          <Link href="/dashboard" className="text-gradient mr-3 text-base font-semibold">
+            makrd
           </Link>
-        ))}
-      </nav>
-      <div className="flex items-center gap-4 text-sm">
-        <Link href="/profile" className="text-neutral-500 hover:underline">
-          {profile?.points_balance ?? 0} pts
-        </Link>
-        <form action="/auth/signout" method="post">
-          <button
-            type="submit"
-            className="rounded-md border border-neutral-300 px-3 py-1.5 font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+          {LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-full px-3 py-1.5 text-sm text-neutral-600 transition-colors hover:bg-black/5 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-neutral-100"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3 text-sm">
+          <Link
+            href="/profile"
+            className="rounded-full bg-black/5 px-3 py-1 font-medium text-neutral-700 transition-colors hover:bg-black/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/15"
           >
-            Sign out
-          </button>
-        </form>
-      </div>
-    </header>
+            {profile?.points_balance ?? 0} pts
+          </Link>
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-black/5 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-neutral-100"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+      </header>
+    </div>
   );
 }

@@ -1,9 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import PrinterLoader from "@/components/printer-loader";
 
 export default function LoginPage() {
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
   async function handleSignIn() {
+    setIsSigningIn(true);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -14,14 +20,60 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-2xl font-semibold">Sign in to makrd</h1>
-      <button
-        onClick={handleSignIn}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 p-8">
+      <Link
+        href="/"
+        className="text-sm text-neutral-500 transition-colors hover:text-neutral-800 dark:hover:text-neutral-200"
       >
-        Sign in with Google
-      </button>
+        ← Back to makrd
+      </Link>
+
+      <div className="glass-strong flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl p-10 text-center">
+        <PrinterLoader size={120} />
+
+        <div>
+          <h1 className="text-2xl font-semibold">Welcome to makrd</h1>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            Sign in to submit a job, register a printer, or start earning points.
+          </p>
+        </div>
+
+        <button
+          onClick={handleSignIn}
+          disabled={isSigningIn}
+          className="flex w-full items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-sm font-medium text-neutral-800 shadow-lg ring-1 shadow-black/5 ring-black/10 transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+        >
+          <GoogleLogo />
+          {isSigningIn ? "Redirecting…" : "Sign in with Google"}
+        </button>
+
+        <p className="text-xs text-neutral-400 dark:text-neutral-500">
+          No passwords, no forms — just your Google account.
+        </p>
+      </div>
     </main>
+  );
+}
+
+function GoogleLogo() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.4 0 10.3-2.1 14-5.5l-6.5-5.5C29.4 34.9 26.8 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.6 39.6 16.3 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.5 5.5C41.4 35.9 44 30.4 44 24c0-1.3-.1-2.7-.4-3.5z"
+      />
+    </svg>
   );
 }

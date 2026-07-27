@@ -72,6 +72,40 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Visual overhaul, part 1 (foundation + front door). Mohit asked for a
+  "liquid glass" look, a professional sign-in, loading animations, and a first-visit
+  tutorial. Built as pure CSS/SVG — no framer-motion or animation library added, to keep
+  the dependency list minimal per CLAUDE.md conventions.
+  - `globals.css`: glass surface utilities (`.glass`/`.glass-strong`, blur+saturate
+    backdrop-filter), a drifting animated gradient-blob ambient background
+    (`.ambient-bg`, respects `prefers-reduced-motion`), a gradient text/button system,
+    and the loader keyframes.
+  - `components/printer-loader.tsx`: bespoke SVG animation — a nozzle sweeping over a
+    boat-hull silhouette (stylized Benchy) that fills upward via `scaleY`, looping. Used
+    as the root `app/loading.tsx` (shown automatically during route transitions) and as
+    a hero visual on the landing/login pages.
+  - `components/onboarding-tour.tsx`: a self-contained first-visit product tour
+    (localStorage-gated, 5 steps, glass modal) that auto-opens on `/` for signed-out
+    visitors; also renders its own "Take the tour" re-trigger button, so it drops into
+    any page with no coordination needed.
+  - Redesigned `/login` (glass card, real Google "G" logo button per their brand
+    guidelines, the printer loader as a centerpiece) and `/` (glass cards for the
+    how-it-works/roadmap sections, gradient CTAs, tour embedded near the hero).
+  - `components/nav.tsx` is now a floating glass pill navbar instead of a plain bordered
+    header.
+  - **Interesting side effect, not a bug:** adding a root `app/loading.tsx` made
+    protected routes stop returning a plain HTTP 307 to curl — Next.js can't send a
+    real redirect once a Suspense boundary above the route has already started
+    streaming a 200 response, so it falls back to an embedded
+    `<meta http-equiv="refresh">` + client-side router redirect instead. Confirmed this
+    still works correctly (verified via grepping for `__next-page-redirect` in the
+    response body across all 7 protected routes) — just changes how to smoke-test it
+    going forward; a real browser redirects effectively instantly either way.
+  Verified typecheck/lint/format/build; dev-server smoke test adjusted per the above.
+  **Next up:** the interior authenticated pages (dashboard, printers, jobs, community,
+  profile) still use the old plain styling — need the same glass treatment for the app
+  to feel cohesive front-to-back, not just a fancy front door.
+
 - **2026-07-27** — Wrapping this solo stretch here. Last thing done: every route had the
   same "makrd" browser tab title — added per-page `metadata` (Dashboard, My Printers,
   Register a Printer, Open Jobs, Submit a Job, Job Details, Community, Profile, Health).
