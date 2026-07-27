@@ -72,6 +72,25 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Migrated the Supabase project to a new account. The original project
+  (`lbpzzecshsuriumwxesf`) was under `satyaanil1986@gmail.com`, which I don't have
+  dashboard access to; switched to a project under `makrd.admin@gmail.com` instead
+  (org "makrd-admin's Org", project **`hrmnsfkocxytkjjqzolz`**,
+  `https://hrmnsfkocxytkjjqzolz.supabase.co`, region ap-northeast-1). Reconnected the
+  Supabase MCP integration to the new account (`claude mcp add` + OAuth login — config
+  now in `.mcp.json`, committed since it holds no secrets) and re-applied all 6
+  migrations verbatim to the new (empty) project; `get_advisors` clean, same as before.
+  Regenerated types (schema identical, so `database.types.ts` didn't need edits) and
+  updated `.env.local` to the new URL/anon key. Verified `pnpm build` and a dev-server
+  smoke test against the new project — same results as before the switch.
+  **Not done yet:** Vercel's env vars still point at the old project — need updating to
+  the new URL/anon key. The Google Cloud OAuth client's redirect URI also needs to be
+  `https://hrmnsfkocxytkjjqzolz.supabase.co/auth/v1/callback` (not the old project's),
+  and the Google Client ID/Secret need entering into *this* project's Authentication →
+  Providers → Google (provider config is per-project, doesn't carry over). The old
+  project (`lbpzzecshsuriumwxesf`) still exists, untouched, in case anything needs
+  recovering from it — otherwise it can be deleted once the new one's confirmed working.
+
 - **2026-07-27** — Built out the core v1 loop end-to-end: printer registration
   (`/printers`, `/printers/new` — model ID + scrypt-hashed code word), job submission
   (`/jobs/new` — uploads to a private `job-files` Storage bucket, live points estimate),
