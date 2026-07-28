@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PrinterLoader from "@/components/printer-loader";
+import EmailForm from "./email-form";
 
 export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
 
   async function handleSignIn() {
     setIsSigningIn(true);
@@ -47,9 +49,16 @@ export default function LoginPage() {
           {isSigningIn ? "Redirecting…" : "Sign in with Google"}
         </button>
 
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">
-          No passwords, no forms — just your Google account.
-        </p>
+        {showEmail ? (
+          <EmailForm />
+        ) : (
+          <button
+            onClick={() => setShowEmail(true)}
+            className="text-xs text-neutral-500 underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+          >
+            Or continue with email instead
+          </button>
+        )}
       </div>
     </main>
   );

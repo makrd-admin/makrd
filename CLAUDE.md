@@ -72,6 +72,29 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Added email sign-in (password + one-time code) alongside Google —
+  Mohit approved this explicitly since CLAUDE.md gates anything touching auth.
+  `/login` now has a "continue with email" toggle revealing `EmailForm`
+  (`app/login/email-form.tsx`): sign in / create account with a password, or an
+  "email me a code instead" path using `signInWithOtp` + `verifyOtp` (6-digit code, no
+  magic-link redirect needed for that path). Password sign-up reuses the existing
+  `/auth/callback` route for the confirmation link — it's already a generic
+  `exchangeCodeForSession` handler, works for email confirmation the same way it
+  handles the Google OAuth code. No schema changes: `handle_new_user` already fires on
+  any `auth.users` insert regardless of provider, so profile auto-creation just works
+  for email signups too.
+  **New relevant advisory, not fixed:** `auth_leaked_password_protection` (checks new
+  passwords against HaveIBeenPwned) — noted as not-applicable back when the app was
+  Google-only; now that passwords are a real signin method, it's worth turning on. It's
+  a dashboard-only Auth setting, same category as enabling the Google provider — I
+  don't have API access to toggle it, so it needs a manual flip:
+  **Authentication → Sign In / Providers → Email**, or **Authentication → Policies**,
+  enable leaked-password protection.
+  Verified typecheck/lint/format/build (still 20 routes) and a route smoke test
+  (confirmed the email toggle renders). **Not tested live** — verifying an actual
+  password sign-up/confirmation/OTP round trip needs a real inbox, which I don't have;
+  Mohit should click through it once.
+
 - **2026-07-27** — Found and fixed why the live site had been showing 500 Internal
   Server Error this entire session, independent of any code — `NEXT_PUBLIC_SUPABASE_URL`
   and `NEXT_PUBLIC_SUPABASE_ANON_KEY` existed as variable names in Vercel but with
