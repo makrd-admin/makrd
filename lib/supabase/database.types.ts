@@ -104,6 +104,50 @@ export type Database = {
           },
         ];
       };
+      points_purchases: {
+        Row: {
+          amount_paise: number;
+          created_at: string;
+          id: string;
+          points: number;
+          razorpay_order_id: string;
+          razorpay_payment_id: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          amount_paise: number;
+          created_at?: string;
+          id?: string;
+          points: number;
+          razorpay_order_id: string;
+          razorpay_payment_id?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          amount_paise?: number;
+          created_at?: string;
+          id?: string;
+          points?: number;
+          razorpay_order_id?: string;
+          razorpay_payment_id?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "points_purchases_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       printers: {
         Row: {
           build_volume: string | null;
@@ -195,6 +239,24 @@ export type Database = {
       accept_job: { Args: { p_job_id: string }; Returns: undefined };
       cancel_job: { Args: { p_job_id: string }; Returns: undefined };
       complete_job: { Args: { p_job_id: string }; Returns: undefined };
+      complete_points_purchase: {
+        Args: { p_order_id: string; p_payment_id: string };
+        Returns: undefined;
+      };
+      create_points_purchase: {
+        Args: { p_package_id: number; p_razorpay_order_id: string };
+        Returns: {
+          amount_paise: number;
+          created_at: string;
+          id: string;
+          points: number;
+          razorpay_order_id: string;
+          razorpay_payment_id: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+      };
       mark_verification: { Args: { p_job_id: string }; Returns: undefined };
       release_job: { Args: { p_job_id: string }; Returns: undefined };
       start_printing: { Args: { p_job_id: string }; Returns: undefined };

@@ -14,7 +14,7 @@ const STEPS = [
   },
   {
     title: "Earn or spend points",
-    body: "Printing for others earns points; getting something printed spends them. No cash changes hands.",
+    body: "Printing for others earns points; getting something printed spends them. Need more? Top up anytime.",
   },
 ];
 
@@ -46,8 +46,8 @@ export default async function Home() {
             Get anything <span className="text-gradient">3D printed</span> by someone near you.
           </h1>
           <p className="max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-            A community-owned, peer-to-peer printing network. Pay in points, earned by printing for
-            others — no cash changes hands.
+            A community-owned, peer-to-peer printing network. Pay in points — earn them by printing
+            for others, or top up anytime.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a

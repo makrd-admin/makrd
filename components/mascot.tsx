@@ -51,6 +51,10 @@ const DIALOGUE: { match: (path: string) => boolean; lines: string[] }[] = [
     lines: ["Points aren't just for jobs — this is where you'll spend them on gear."],
   },
   {
+    match: (p) => p.startsWith("/buy-points"),
+    lines: ["Running low? A quick top-up with a card or UPI and you're back in business."],
+  },
+  {
     match: (p) => p.startsWith("/profile"),
     lines: ["A good display name helps other maKrs recognize you."],
   },
@@ -70,7 +74,7 @@ const FAQ = [
   },
   {
     q: "How do points work?",
-    a: "Printing a job for someone earns you points; getting something printed spends them. No cash changes hands.",
+    a: "Printing a job for someone earns you points; getting something printed spends them. You can also buy points directly with a card or UPI if you need more.",
   },
   {
     q: "How do I get matched with a printer?",
@@ -83,6 +87,10 @@ const FAQ = [
   {
     q: "Can I back out of a job I accepted?",
     a: "Yes — if you haven't started printing yet, you can release it back to the marketplace from the job's page.",
+  },
+  {
+    q: "Can I buy points directly?",
+    a: "Yes — head to Buy Points and top up with a card or UPI via Razorpay, no need to wait to earn them.",
   },
 ];
 

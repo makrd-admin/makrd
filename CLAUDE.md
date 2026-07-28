@@ -72,6 +72,49 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Added buying points with real money via Razorpay — asked first
+  since it's both a paid third-party service (CLAUDE.md gate) and a real change to the
+  economic model (this was a pure earn-by-labor points economy until now; "no cash
+  changes hands" was on the landing page, the tour, and Skipper's FAQ — updated all
+  three to acknowledge top-ups instead of ripping that framing out). Mohit chose
+  Razorpay over Stripe (India focus) and "buy points directly" over a subscription
+  model, with the account going up under `makrd.admin@gmail.com`.
+  New `points_purchases` table tracks Razorpay order → points, RLS read-only for the
+  owner, no client insert/update policy at all — writes only happen through two RPCs:
+  `create_points_purchase(package_id, order_id)` re-derives the real points/amount
+  **server-side from a hardcoded package list**, exactly the same discipline as
+  `set_job_points` — never trusts a client-supplied points or amount value, so even a
+  raw REST call can't credit an arbitrary amount. `complete_points_purchase` (never
+  granted to any client role) is the only thing that ever credits `points_balance` for
+  a purchase, and only runs from the webhook after signature verification, gated by
+  `status = 'created'` so retries can't double-credit.
+  This is the first time `SUPABASE_SERVICE_ROLE_KEY` is actually used (new
+  `lib/supabase/service.ts`) — every other RPC in this app runs through a user's own
+  session, but a payment webhook has no user session to authenticate with, only
+  Razorpay's HMAC signature, so it needs the elevated key to write `points_purchases`/
+  `profiles` on the payer's behalf. Verified the webhook route
+  (`app/api/razorpay/webhook/route.ts`) fails closed and clean (500 with a plain JSON
+  error, not an uncaught exception) when the secret isn't configured yet — confirmed
+  locally, since there's nothing to test end-to-end without real keys.
+  Order creation calls Razorpay's Orders API directly via `fetch` rather than adding
+  their `razorpay` npm package — it's one simple authenticated POST, didn't seem worth
+  a new dependency for. Client-side uses Razorpay's own hosted Checkout widget
+  (`checkout.razorpay.com/v1/checkout.js` via `next/script`) so raw card details never
+  touch our code, keeping this out of PCI scope.
+  Added `/buy-points` (3 preset packages, placeholder flat rate of ₹1 = 1 point — a real
+  pricing decision Mohit should sanity-check, easy to adjust in one place:
+  `lib/points-purchase.ts` display config + the SQL function's `case` statement, which
+  is the actually-authoritative side). Linked from nav and dashboard quick actions.
+  Also refreshed `README.md`, which had gone stale since the very first scaffold commit
+  (still described an empty placeholder migration) — added the Razorpay env var table
+  and a note on the current git-triggered-deploys-are-blocked situation.
+  **Manual steps still needed, cannot be done from here:** create the actual Razorpay
+  account and complete KYC (real business/identity verification — Test Mode keys work
+  immediately without this, enough to verify the integration), then hand over the Key
+  ID/Secret and, once I have a webhook URL, the webhook secret, the same way the
+  Supabase keys got set as Vercel env vars earlier tonight.
+  Verified typecheck/lint/format/build (22 routes now) and a route smoke test.
+
 - **2026-07-27** — Fixed a real bug Mohit hit live: the onboarding tour's last step
   still said "Sign in with Google" and linked to `/login` — a leftover from when the
   tour lived on the pre-signin landing page. Since it moved to the dashboard (an

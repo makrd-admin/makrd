@@ -19,7 +19,7 @@ const STEPS = [
   },
   {
     title: "3. Earn points printing for others",
-    body: "No cash changes hands. Fulfilling a job earns you points; getting something printed spends them.",
+    body: "Fulfilling a job earns you points; getting something printed spends them. Need more? You can top up anytime with a card or UPI.",
   },
   {
     title: "4. Everything, in one dashboard",

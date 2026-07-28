@@ -20,6 +20,7 @@ const QUICK_ACTIONS = [
   { href: "/printers/new", label: "Register a printer", hint: "Start earning points" },
   { href: "/jobs", label: "Browse open jobs", hint: "Find work for your printer" },
   { href: "/community", label: "Community", hint: "See who's on the network" },
+  { href: "/buy-points", label: "Buy points", hint: "Top up with a card or UPI" },
 ];
 
 export default async function DashboardPage({
