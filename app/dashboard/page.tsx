@@ -154,7 +154,7 @@ export default async function DashboardPage({
                     className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                   >
                     <span>
-                      {job.material} × {job.quantity} · {job.est_points} pts
+                      {job.material} × {job.quantity} · {job.weight_grams}g · {job.est_points} pts
                     </span>
                     <span className="text-neutral-500 dark:text-neutral-400">
                       {STATUS_LABELS[job.status] ?? job.status}
@@ -186,7 +186,7 @@ export default async function DashboardPage({
                     className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                   >
                     <span>
-                      {job.material} × {job.quantity} · {job.est_points} pts
+                      {job.material} × {job.quantity} · {job.weight_grams}g · {job.est_points} pts
                     </span>
                     <span className="text-neutral-500 dark:text-neutral-400">
                       {STATUS_LABELS[job.status] ?? job.status}

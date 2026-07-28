@@ -20,6 +20,7 @@ export type Database = {
           requester_id: string;
           status: string;
           updated_at: string;
+          weight_grams: number;
         };
         Insert: {
           created_at?: string;
@@ -32,6 +33,7 @@ export type Database = {
           requester_id: string;
           status?: string;
           updated_at?: string;
+          weight_grams?: number;
         };
         Update: {
           created_at?: string;
@@ -43,6 +45,7 @@ export type Database = {
           quantity?: number;
           requester_id?: string;
           status?: string;
+          weight_grams?: number;
           updated_at?: string;
         };
         Relationships: [

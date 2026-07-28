@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
-import { estimatePoints } from "@/lib/points";
+import { estimatePoints, OTHER_MATERIAL } from "@/lib/points";
 
 export type SubmitJobState = { error: string | null };
 
@@ -16,10 +16,16 @@ export async function submitJob(
   const user = await requireUser();
   const supabase = await createClient();
 
-  const material = String(formData.get("material") ?? "");
+  const materialField = String(formData.get("material") ?? "");
+  const customMaterial = String(formData.get("custom_material") ?? "").trim();
+  const material = materialField === OTHER_MATERIAL ? customMaterial : materialField;
+  const weightGrams = Number(formData.get("weight_grams") ?? 0);
   const quantity = Number(formData.get("quantity") ?? 1);
   const file = formData.get("model_file");
 
+  if (!material) {
+    return { error: "Enter a material" };
+  }
   if (!(file instanceof File) || file.size === 0) {
     return { error: "A model file is required" };
   }
@@ -29,9 +35,9 @@ export async function submitJob(
   // value can't be tampered with in transit.
   let estPoints: number;
   try {
-    estPoints = estimatePoints(material, quantity);
+    estPoints = estimatePoints(material, weightGrams, quantity);
   } catch {
-    return { error: "Pick a valid material and quantity" };
+    return { error: "Pick a valid material, weight, and quantity" };
   }
 
   const path = `${user.id}/${randomUUID()}-${file.name}`;
@@ -46,6 +52,7 @@ export async function submitJob(
       requester_id: user.id,
       model_file: path,
       material,
+      weight_grams: weightGrams,
       quantity,
       est_points: estPoints,
     })

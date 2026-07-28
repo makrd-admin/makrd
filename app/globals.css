@@ -54,6 +54,27 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Native <select> dropdown popups render with their own OS/browser
+   background (not our glass/backdrop styling), so a light theme-driven
+   text color can end up invisible against it — tell the browser which
+   palette to use for native form-control chrome, plus an explicit
+   fallback for browsers that only honor <option> styling directly. */
+select {
+  color-scheme: light dark;
+}
+
+select option {
+  background-color: #ffffff;
+  color: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  select option {
+    background-color: #18181b;
+    color: #f2f2f7;
+  }
+}
+
 /* ---------------------------------------------------------------------
    Ambient background: soft drifting gradient blobs behind everything.
    Fixed + pointer-events-none so it never interferes with content.

@@ -43,7 +43,7 @@ export default async function JobsPage() {
             <li key={job.id} className="glass flex items-center justify-between rounded-2xl p-5">
               <div>
                 <p className="font-medium">
-                  {job.material} × {job.quantity}
+                  {job.material} × {job.quantity} · {job.weight_grams}g
                 </p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {job.est_points} pts

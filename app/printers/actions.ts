@@ -21,6 +21,10 @@ export async function createPrinter(
   const location = String(formData.get("location") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const materials = formData.getAll("materials").map(String);
+  const customMaterial = String(formData.get("custom_material") ?? "").trim();
+  if (customMaterial) {
+    materials.push(customMaterial);
+  }
   const codeWord = String(formData.get("code_word") ?? "").trim();
 
   if (!make || !model) {

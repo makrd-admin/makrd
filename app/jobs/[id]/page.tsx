@@ -52,7 +52,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     <main className="mx-auto w-full max-w-2xl p-6 sm:p-10">
       <div className="glass-strong rounded-3xl p-8">
         <h1 className="mb-2 text-xl font-semibold">
-          {job.material} × {job.quantity}
+          {job.material} × {job.quantity} · {job.weight_grams}g
         </h1>
         <p className="mb-4 text-sm text-neutral-500 dark:text-neutral-400">
           <span className="text-gradient font-medium">{job.est_points} pts</span> · Status:{" "}
