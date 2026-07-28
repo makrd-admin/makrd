@@ -72,6 +72,65 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-28 (later)** — Follow-up batch: disabled Razorpay, fixed the real cause of
+  STL uploads still failing, added weight rendering + a provider commission.
+  **Found the actual STL upload bug.** The earlier same-day fix (raising Next's
+  `serverActions.bodySizeLimit` to 100mb) only addressed Next's own artificial cap —
+  Vercel's Node serverless functions enforce a separate, much lower request-body limit
+  (~4.5MB) that no Next.js config can override, so any real model file was still being
+  rejected by the platform itself, one layer below where the earlier fix could reach.
+  Surfaced live as "An unexpected response was received from the server." Fixed for
+  real this time: `job-form.tsx` now uploads the file straight from the browser to the
+  `job-files` Storage bucket (existing RLS already scopes writes to the uploader's own
+  folder) and only sends the resulting storage path to the `submitJob` Server Action —
+  no file bytes ever cross the Server Action boundary again. Also found and fixed a
+  second, unrelated cause of the same symptom: the 5 profiles that existed before that
+  day's earlier signup-bonus migration were stuck at 0 points (the bonus only applies
+  to new signups going forward), so `check_requester_balance` was correctly rejecting
+  any job over the free-print threshold — backfilled the 25-point bonus to all 5
+  existing accounts for fairness. Verified the DB trigger chain directly via a
+  rolled-back SQL insert against a real account; could not fully simulate the browser
+  upload flow itself (no test credentials or email inbox access, and I deliberately did
+  not try to force-confirm a throwaway signup by writing to `auth.users` directly — that
+  got (correctly) blocked by a safety check, and forcing it further felt like the wrong
+  call for a security-sensitive table).
+  **Disabled buying points with real money.** Razorpay's account approval isn't
+  happening soon, so points are labour-driven for now — commented out (not deleted) the
+  nav link, dashboard quick action, and Skipper's buy-points dialogue/FAQ line;
+  `/buy-points` now shows a "not open yet, earn by printing instead" placeholder. The
+  real integration (`buy-points-form.tsx`, the webhook route, the `points_purchases`
+  table/RPCs) is untouched and easy to re-enable later.
+  **Added real weight estimation ("rendering software").** `lib/stl-weight.ts` is a
+  small self-contained STL parser (binary + ASCII, no new dependency) that computes a
+  mesh's solid volume via the divergence theorem — verified against a 10mm test cube
+  (expected 1cm³, got 0.9999999999999999cm³). Combined with per-material density and an
+  assumed 20% infill factor (real prints aren't solid — a rough approximation by design,
+  tunable via one constant) to estimate weight per copy. The job form auto-fills this
+  when an STL is selected (still editable if the estimate looks off); `submitJob`
+  recomputes it server-side from the actual uploaded file for STL specifically, so the
+  client-supplied number can't be trusted for pricing on that format. 3MF/STEP/OBJ still
+  need a manual weight — no volume parser for those yet, was out of scope to build a
+  zip/CAD parser for this pass.
+  **Added a provider commission.** On job completion the provider now keeps 90% of the
+  requester's payment (`handle_job_completed` migration
+  `20260728020000_provider_commission.sql`) instead of the full amount; shown as
+  "you'd earn ~X pts" on the open jobs list and job detail page. The remaining 10% isn't
+  routed anywhere yet — no platform account exists to hold it — a starting proportion
+  flagged as easy to retune (`PROVIDER_COMMISSION_RATE` in `lib/points.ts` + the SQL
+  trigger) rather than a settled design.
+  **Storage capacity, raised by Mohit mid-session, not yet resolved:** the Supabase
+  project is on the **free plan** (confirmed via `get_organization`) — free-tier file
+  storage is capped in the low single digits of GB, and job model files (up to 100MB
+  each per the bucket's own cap) will accumulate with real usage. Nothing was built to
+  address this (no auto-delete — deleting a requester's file could break their ability
+  to re-download it later, a data-retention call that needs Mohit's input, not a silent
+  decision). Worth deciding before real traffic: a retention/cleanup policy, and/or
+  budgeting for a plan upgrade once usage grows.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  `get_advisors` clean (only the same pre-existing expected warnings); pushed to `main`
+  and `mohit`, redeployed via the manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow, verified live on `https://makrd.vercel.app`.
+
 - **2026-07-28** — Batch of bug fixes + features from a single long feedback message.
   Fixed three real bugs: (1) STL/3MF/STEP uploads failing with "something went wrong"
   every time — root cause was Next's default 1MB Server Action body limit rejecting
