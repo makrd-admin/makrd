@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition, type FormEvent } from "react";
 import {
   MATERIALS,
   OTHER_MATERIAL,
@@ -8,6 +8,7 @@ import {
   estimatePoints,
 } from "@/lib/points";
 import { GLASS_INPUT } from "@/lib/ui";
+import { createClient } from "@/lib/supabase/client";
 import { submitJob, type SubmitJobState } from "../actions";
 
 const initialState: SubmitJobState = { error: null };
@@ -18,6 +19,9 @@ export default function JobForm() {
   const [weightGrams, setWeightGrams] = useState(10);
   const [quantity, setQuantity] = useState(1);
   const [state, formAction, isPending] = useActionState(submitJob, initialState);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isTransitionPending, startTransition] = useTransition();
 
   const isOther = material === OTHER_MATERIAL;
   let estimate = 0;
@@ -28,9 +32,57 @@ export default function JobForm() {
   }
   const qualifiesForFreePrint =
     weightGrams * (quantity || 1) <= FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS;
+  const busy = isUploading || isPending || isTransitionPending;
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setUploadError(null);
+
+    const form = e.currentTarget;
+    const fileInput = form.elements.namedItem("model_file") as HTMLInputElement | null;
+    const file = fileInput?.files?.[0];
+    if (!file) {
+      setUploadError("A model file is required");
+      return;
+    }
+
+    setIsUploading(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setIsUploading(false);
+      setUploadError("You must be signed in");
+      return;
+    }
+
+    // Uploaded directly from the browser to Supabase Storage rather than
+    // through a Server Action — Vercel's serverless functions cap request
+    // bodies well below what a real model file needs, regardless of Next's
+    // own body-size config. The job-files bucket's RLS policy scopes writes
+    // to the uploader's own folder, same as before.
+    const path = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+    const { error: uploadErr } = await supabase.storage.from("job-files").upload(path, file);
+    setIsUploading(false);
+    if (uploadErr) {
+      setUploadError(uploadErr.message);
+      return;
+    }
+
+    const fd = new FormData(form);
+    // The raw File is still present in `form`'s FormData at this point —
+    // strip it so the server action's payload stays tiny (just the storage
+    // path), which is the whole point of uploading directly to Storage first.
+    fd.delete("model_file");
+    fd.set("model_file_path", path);
+    startTransition(() => {
+      formAction(fd);
+    });
+  }
 
   return (
-    <form action={formAction} className="glass-strong flex flex-col gap-4 rounded-3xl p-8">
+    <form onSubmit={handleSubmit} className="glass-strong flex flex-col gap-4 rounded-3xl p-8">
       {qualifiesForFreePrint && (
         <p className="glass rounded-xl px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">
           🎁 Your first print is free, up to {FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS}g total — this one
@@ -119,18 +171,18 @@ export default function JobForm() {
         right now, it&apos;ll be listed on the open jobs marketplace instead.
       </p>
 
-      {state.error && (
+      {(uploadError || state.error) && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/60 dark:text-red-300">
-          {state.error}
+          {uploadError || state.error}
         </p>
       )}
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={busy}
         className="btn-gradient rounded-full px-4 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50"
       >
-        {isPending ? "Submitting…" : "Submit job"}
+        {isUploading ? "Uploading…" : busy ? "Submitting…" : "Submit job"}
       </button>
     </form>
   );

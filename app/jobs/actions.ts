@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -21,13 +20,22 @@ export async function submitJob(
   const material = materialField === OTHER_MATERIAL ? customMaterial : materialField;
   const weightGrams = Number(formData.get("weight_grams") ?? 0);
   const quantity = Number(formData.get("quantity") ?? 1);
-  const file = formData.get("model_file");
+  // The file itself is uploaded directly from the browser to Supabase
+  // Storage before this action runs (see job-form.tsx) — Vercel's Node
+  // serverless functions cap request bodies at ~4.5MB regardless of Next's
+  // own serverActions.bodySizeLimit, so routing real model files through
+  // this action would fail for any file above that size. This action only
+  // ever receives the resulting storage path, never the file bytes.
+  const path = String(formData.get("model_file_path") ?? "");
 
   if (!material) {
     return { error: "Enter a material" };
   }
-  if (!(file instanceof File) || file.size === 0) {
+  if (!path) {
     return { error: "A model file is required" };
+  }
+  if (path.split("/")[0] !== user.id) {
+    return { error: "That file wasn't uploaded by you" };
   }
 
   // Client-side estimate for UX only — the database recomputes and enforces
@@ -38,12 +46,6 @@ export async function submitJob(
     estPoints = estimatePoints(material, weightGrams, quantity);
   } catch {
     return { error: "Pick a valid material, weight, and quantity" };
-  }
-
-  const path = `${user.id}/${randomUUID()}-${file.name}`;
-  const { error: uploadError } = await supabase.storage.from("job-files").upload(path, file);
-  if (uploadError) {
-    return { error: uploadError.message };
   }
 
   const { data: inserted, error: insertError } = await supabase
