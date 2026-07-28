@@ -72,6 +72,27 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Found and fixed why the live site had been showing 500 Internal
+  Server Error this entire session, independent of any code — `NEXT_PUBLIC_SUPABASE_URL`
+  and `NEXT_PUBLIC_SUPABASE_ANON_KEY` existed as variable names in Vercel but with
+  **empty values**, AND were saved in Vercel's "sensitive" mode (write-only — once set,
+  the value can never be read back via dashboard, CLI pull, or API, by design). That
+  second part is why every earlier fix attempt looked like it worked from the CLI's
+  perspective but didn't: `vercel build` running locally has no access to sensitive var
+  values at all (that's the whole point of the feature), so every local
+  `vercel build --prod` + `vercel deploy --prebuilt` cycle tonight was silently building
+  without real Supabase credentials, no error until the deployed function actually tried
+  to construct a client at request time. Fixed by removing and re-adding both vars with
+  `--no-sensitive` (real values, confirmed readable via a fresh `vercel env pull`) for
+  both Production and Development, then rebuilding and redeploying — confirmed the URL
+  is now actually embedded in the build output before shipping it, and confirmed
+  `https://makrd.vercel.app` returns 200 with real content afterward.
+  **Still true, unrelated to this fix:** git-push-triggered deployments are still
+  blocked (Hobby plan + private repo + commit-author mismatch, found earlier tonight) —
+  the local build + `vercel deploy --prebuilt --prod` path is the reliable way to ship
+  until that's resolved (make the repo public, or match the commit author to the
+  Vercel account — Mohit hasn't picked one yet).
+
 - **2026-07-27** — Named and shipped the mascot: **Skipper**, a Benchy with a face (it's
   a tugboat model already, so "Skipper" doubles as the tour-guide role). Added eyes +
   a smile to the hull in `printer-loader-realistic.tsx` so the loading screen literally
