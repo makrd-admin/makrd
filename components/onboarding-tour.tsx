@@ -108,12 +108,12 @@ export default function OnboardingTour() {
                   </button>
                 )}
                 {isLast ? (
-                  <a
-                    href="/login"
+                  <button
+                    onClick={close}
                     className="btn-gradient rounded-full px-5 py-2 text-sm font-medium text-white"
                   >
-                    Sign in with Google
-                  </a>
+                    Let&apos;s go!
+                  </button>
                 ) : (
                   <button
                     onClick={() => setStep((s) => s + 1)}

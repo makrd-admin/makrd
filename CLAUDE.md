@@ -72,6 +72,13 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Fixed a real bug Mohit hit live: the onboarding tour's last step
+  still said "Sign in with Google" and linked to `/login` — a leftover from when the
+  tour lived on the pre-signin landing page. Since it moved to the dashboard (an
+  earlier entry tonight), everyone seeing it is already signed in, so that button was
+  asking already-authenticated users to sign in again. Now just closes the tour
+  ("Let's go!"). Verified typecheck/lint/format/build, redeployed.
+
 - **2026-07-27** — Gave Skipper an actual 3D model instead of the SVG approximation,
   per "make the benchy realistic, proper 3D, Blender-made" — asked first since it meant
   a real dependency addition (breaks from the pure-CSS/SVG approach used everywhere
