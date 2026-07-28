@@ -29,3 +29,39 @@ export function estimatePoints(material: string, weightGrams: number, quantity: 
   const rate = MATERIALS.find((m) => m.value === material)?.pointsPerGram ?? DEFAULT_RATE;
   return Math.max(1, Math.round(rate * weightGrams * Math.floor(quantity)));
 }
+
+const MATERIAL_DENSITY_G_CM3: Record<string, number> = {
+  PLA: 1.24,
+  PETG: 1.27,
+  ABS: 1.04,
+  TPU: 1.21,
+  Resin: 1.15,
+};
+const DEFAULT_DENSITY_G_CM3 = 1.2; // custom/"Other" materials
+
+/**
+ * Real FDM prints are rarely solid — this assumes a typical hobbyist
+ * infill level so a parsed model's solid volume turns into a plausible
+ * printed weight, not a "printed at 100% infill" number. Rough by design;
+ * one constant to tune later once real prints give us better data.
+ */
+export const ASSUMED_INFILL_FACTOR = 0.2;
+
+/** Weight of one printed copy, estimated from its parsed mesh volume. */
+export function estimateWeightGramsFromVolume(volumeCm3: number, material: string): number {
+  const density = MATERIAL_DENSITY_G_CM3[material] ?? DEFAULT_DENSITY_G_CM3;
+  return Math.max(1, Math.round(volumeCm3 * density * ASSUMED_INFILL_FACTOR));
+}
+
+/**
+ * Share of a completed job's points the provider keeps. The remainder isn't
+ * routed anywhere yet (no platform account exists to hold it) — this is a
+ * starting proportion, easy to tune in one place later; mirror any change
+ * in the handle_job_completed SQL trigger, which is what actually credits
+ * points on completion.
+ */
+export const PROVIDER_COMMISSION_RATE = 0.9;
+
+export function estimateCommission(estPoints: number): number {
+  return Math.max(0, Math.round(estPoints * PROVIDER_COMMISSION_RATE));
+}

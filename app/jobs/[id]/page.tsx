@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { estimateCommission } from "@/lib/points";
 import { BTN_PRIMARY, BTN_SECONDARY } from "@/lib/ui";
 import {
   acceptJob,
@@ -57,6 +58,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         <p className="mb-4 text-sm text-neutral-500 dark:text-neutral-400">
           <span className="text-gradient font-medium">{job.est_points} pts</span> · Status:{" "}
           {STATUS_LABELS[job.status] ?? job.status}
+          {(isProvider || (!isRequester && job.status === "submitted")) && (
+            <> · you&apos;d earn ~{estimateCommission(job.est_points)} pts</>
+          )}
         </p>
 
         {fileUrl && (

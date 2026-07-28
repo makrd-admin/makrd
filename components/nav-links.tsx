@@ -9,7 +9,8 @@ const LINKS = [
   { href: "/jobs", label: "Jobs" },
   { href: "/community", label: "Community" },
   { href: "/shop", label: "Rewards" },
-  { href: "/buy-points", label: "Buy Points" },
+  // Buying points with real money (Razorpay) is on hold — points are
+  // labour-driven for now. Re-add once Razorpay is ready to go live.
   { href: "/announcements", label: "Announcements" },
 ];
 

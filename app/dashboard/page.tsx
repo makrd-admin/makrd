@@ -20,7 +20,9 @@ const QUICK_ACTIONS = [
   { href: "/printers/new", label: "Register a printer", hint: "Start earning points" },
   { href: "/jobs", label: "Browse open jobs", hint: "Find work for your printer" },
   { href: "/community", label: "Community", hint: "See who's on the network" },
-  { href: "/buy-points", label: "Buy points", hint: "Top up with a card or UPI" },
+  // Buying points with real money (Razorpay) is on hold — points are
+  // labour-driven for now (earn by printing for others, or the signup
+  // bonus). Re-add this once Razorpay is ready to go live.
 ];
 
 export default async function DashboardPage({

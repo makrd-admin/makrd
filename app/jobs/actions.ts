@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
-import { estimatePoints, OTHER_MATERIAL } from "@/lib/points";
+import { estimatePoints, estimateWeightGramsFromVolume, OTHER_MATERIAL } from "@/lib/points";
+import { parseSTLVolumeCm3 } from "@/lib/stl-weight";
 
 export type SubmitJobState = { error: string | null };
 
@@ -18,7 +19,7 @@ export async function submitJob(
   const materialField = String(formData.get("material") ?? "");
   const customMaterial = String(formData.get("custom_material") ?? "").trim();
   const material = materialField === OTHER_MATERIAL ? customMaterial : materialField;
-  const weightGrams = Number(formData.get("weight_grams") ?? 0);
+  let weightGrams = Number(formData.get("weight_grams") ?? 0);
   const quantity = Number(formData.get("quantity") ?? 1);
   // The file itself is uploaded directly from the browser to Supabase
   // Storage before this action runs (see job-form.tsx) — Vercel's Node
@@ -36,6 +37,21 @@ export async function submitJob(
   }
   if (path.split("/")[0] !== user.id) {
     return { error: "That file wasn't uploaded by you" };
+  }
+
+  // For STL files, recompute weight server-side from the actual uploaded
+  // geometry rather than trusting whatever the client sent — same
+  // never-trust-the-client discipline as est_points below. Other formats
+  // (3MF/STEP/OBJ) fall back to trusting the client-supplied weight for now;
+  // we don't have a volume parser for those yet.
+  if (path.toLowerCase().endsWith(".stl")) {
+    const { data: fileBlob } = await supabase.storage.from("job-files").download(path);
+    if (fileBlob) {
+      const volumeCm3 = parseSTLVolumeCm3(await fileBlob.arrayBuffer());
+      if (volumeCm3 !== null) {
+        weightGrams = estimateWeightGramsFromVolume(volumeCm3, material);
+      }
+    }
   }
 
   // Client-side estimate for UX only — the database recomputes and enforces

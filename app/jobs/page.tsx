@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { estimateCommission } from "@/lib/points";
 import { acceptJob } from "./actions";
 
 export const metadata: Metadata = { title: "Open Jobs · maKrd" };
@@ -46,7 +47,7 @@ export default async function JobsPage() {
                   {job.material} × {job.quantity} · {job.weight_grams}g
                 </p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {job.est_points} pts
+                  {job.est_points} pts · you&apos;d earn ~{estimateCommission(job.est_points)} pts
                 </p>
               </div>
               <form action={acceptJob.bind(null, job.id)}>

@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useState, useTransition, type FormEvent } from "react";
+import { useActionState, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 import {
   MATERIALS,
   OTHER_MATERIAL,
   FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS,
   estimatePoints,
+  estimateWeightGramsFromVolume,
 } from "@/lib/points";
+import { parseSTLVolumeCm3 } from "@/lib/stl-weight";
 import { GLASS_INPUT } from "@/lib/ui";
 import { createClient } from "@/lib/supabase/client";
 import { submitJob, type SubmitJobState } from "../actions";
@@ -23,6 +25,13 @@ export default function JobForm() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isTransitionPending, startTransition] = useTransition();
 
+  // When the selected file is an STL, we parse its actual mesh volume and
+  // estimate weight from it instead of asking for a guess — volumeCm3 holds
+  // that parsed value so the estimate can be recomputed if the material
+  // changes (different materials have different densities).
+  const [volumeCm3, setVolumeCm3] = useState<number | null>(null);
+  const [weightMode, setWeightMode] = useState<"auto" | "manual">("manual");
+
   const isOther = material === OTHER_MATERIAL;
   let estimate = 0;
   try {
@@ -33,6 +42,38 @@ export default function JobForm() {
   const qualifiesForFreePrint =
     weightGrams * (quantity || 1) <= FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS;
   const busy = isUploading || isPending || isTransitionPending;
+
+  function recomputeAutoWeight(vol: number, mat: string) {
+    setWeightGrams(estimateWeightGramsFromVolume(vol, mat));
+  }
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !file.name.toLowerCase().endsWith(".stl")) {
+      setVolumeCm3(null);
+      setWeightMode("manual");
+      return;
+    }
+
+    const buffer = await file.arrayBuffer();
+    const vol = parseSTLVolumeCm3(buffer);
+    if (vol === null) {
+      setVolumeCm3(null);
+      setWeightMode("manual");
+      return;
+    }
+
+    setVolumeCm3(vol);
+    setWeightMode("auto");
+    recomputeAutoWeight(vol, material);
+  }
+
+  function handleMaterialChange(value: string) {
+    setMaterial(value);
+    if (weightMode === "auto" && volumeCm3 !== null) {
+      recomputeAutoWeight(volumeCm3, value);
+    }
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -96,11 +137,13 @@ export default function JobForm() {
           type="file"
           name="model_file"
           accept=".stl,.3mf,.step,.stp,.obj"
+          onChange={handleFileChange}
           required
           className="text-sm"
         />
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
-          STL, 3MF, STEP, or OBJ.
+          STL, 3MF, STEP, or OBJ. Weight is estimated automatically from STL files — other formats
+          need a manual weight for now.
         </span>
       </label>
 
@@ -109,7 +152,7 @@ export default function JobForm() {
         <select
           name="material"
           value={material}
-          onChange={(e) => setMaterial(e.target.value)}
+          onChange={(e) => handleMaterialChange(e.target.value)}
           className={GLASS_INPUT}
         >
           {MATERIALS.map((m) => (
@@ -137,15 +180,23 @@ export default function JobForm() {
       )}
 
       <label className="flex flex-col gap-1 text-sm">
-        Weight (grams, total for all copies)
+        Weight per copy (grams)
         <input
           type="number"
           name="weight_grams"
           min={1}
           value={weightGrams}
-          onChange={(e) => setWeightGrams(Number(e.target.value))}
+          onChange={(e) => {
+            setWeightMode("manual");
+            setWeightGrams(Number(e.target.value));
+          }}
           className={GLASS_INPUT}
         />
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          {weightMode === "auto"
+            ? "Estimated from your STL file's geometry — edit it if this looks off."
+            : "Enter the printed weight of one copy."}
+        </span>
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
