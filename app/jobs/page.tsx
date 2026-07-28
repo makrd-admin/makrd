@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { acceptJob } from "./actions";
 
-export const metadata: Metadata = { title: "Open Jobs · makrd" };
+export const metadata: Metadata = { title: "Open Jobs · maKrd" };
 
 export default async function JobsPage() {
   const user = await requireUser();
@@ -22,7 +22,7 @@ export default async function JobsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
+    <main className="mx-auto w-full max-w-6xl p-6 sm:p-10">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold">Open jobs</h1>
         <Link
@@ -38,7 +38,7 @@ export default async function JobsPage() {
           No open jobs right now.
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {jobs.map((job) => (
             <li key={job.id} className="glass flex items-center justify-between rounded-2xl p-5">
               <div>

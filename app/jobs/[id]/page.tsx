@@ -12,7 +12,7 @@ import {
   completeJob,
 } from "../actions";
 
-export const metadata: Metadata = { title: "Job Details · makrd" };
+export const metadata: Metadata = { title: "Job Details · maKrd" };
 
 const STATUS_LABELS: Record<string, string> = {
   submitted: "Submitted",
@@ -49,7 +49,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   }
 
   return (
-    <main className="mx-auto max-w-lg p-8">
+    <main className="mx-auto w-full max-w-2xl p-6 sm:p-10">
       <div className="glass-strong rounded-3xl p-8">
         <h1 className="mb-2 text-xl font-semibold">
           {job.material} × {job.quantity}

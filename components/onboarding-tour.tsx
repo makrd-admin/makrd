@@ -6,8 +6,8 @@ const SEEN_KEY = "makrd_tour_seen";
 
 const STEPS = [
   {
-    title: "Welcome to makrd",
-    body: "A peer-to-peer 3D printing network. Let's take sixty seconds to show you around.",
+    title: "Welcome to the 3D print community, maKr!",
+    body: "I'm Skipper — I'll take sixty seconds to show you around maKrd, a peer-to-peer 3D printing network.",
   },
   {
     title: "1. Submit a job",

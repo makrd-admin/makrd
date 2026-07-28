@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Community · makrd" };
+export const metadata: Metadata = { title: "Community · maKrd" };
 
 export default async function CommunityPage() {
   await requireUser();
@@ -23,11 +23,10 @@ export default async function CommunityPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-2 text-xl font-semibold">Community printers</h1>
+    <main className="mx-auto w-full max-w-6xl p-6 sm:p-10">
+      <h1 className="mb-2 text-xl font-semibold">Community maKrs</h1>
       <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
-        Every printer registered on the network. Submit a job and one of these members can pick it
-        up.
+        Every printer registered on the network. Submit a job and one of these maKrs can pick it up.
       </p>
 
       {printers.length === 0 ? (
@@ -35,7 +34,7 @@ export default async function CommunityPage() {
           No printers registered yet — be the first.
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {printers.map((printer) => (
             <li key={printer.id} className="glass rounded-2xl p-5">
               <div className="flex items-center justify-between">
@@ -43,7 +42,7 @@ export default async function CommunityPage() {
                   {printer.make} {printer.model}
                 </span>
                 <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
-                  {printer.owner?.display_name ?? "A makrd member"}
+                  {printer.owner?.display_name ?? "A maKr"}
                 </span>
               </div>
               {printer.location && (

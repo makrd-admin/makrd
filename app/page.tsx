@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PrinterLoader from "@/components/printer-loader";
-import OnboardingTour from "@/components/onboarding-tour";
+import LogoMark from "@/components/logo-mark";
 
 const STEPS = [
   {
@@ -36,68 +36,88 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="flex flex-col items-center gap-6 px-8 py-20 text-center">
-        <PrinterLoader size={140} />
-        <h1 className="text-5xl font-semibold tracking-tight">
-          <span className="text-gradient">makrd</span>
-        </h1>
-        <p className="max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-          A community-owned, peer-to-peer 3D printing network. Get anything printed by a member near
-          you — pay in points, earned by printing for others.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="/login"
-            className="btn-gradient rounded-full px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
-          >
-            Sign in with Google
-          </a>
-          <OnboardingTour />
+      <section className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="flex flex-col items-start gap-6">
+          <div className="flex items-center gap-2">
+            <LogoMark size={32} />
+            <span className="text-gradient text-lg font-semibold">maKrd</span>
+          </div>
+          <h1 className="text-5xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
+            Get anything <span className="text-gradient">3D printed</span> by someone near you.
+          </h1>
+          <p className="max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
+            A community-owned, peer-to-peer printing network. Pay in points, earned by printing for
+            others — no cash changes hands.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="/login"
+              className="btn-gradient rounded-full px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            >
+              Sign in with Google
+            </a>
+            <a
+              href="/announcements"
+              className="rounded-full px-5 py-3 text-sm font-medium text-neutral-600 underline underline-offset-4 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            >
+              See what&apos;s coming
+            </a>
+          </div>
+        </div>
+        <div className="flex justify-center lg:justify-end">
+          <PrinterLoader size={220} />
         </div>
       </section>
 
-      <section className="px-8 py-16">
-        <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
+      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
+        <h2 className="mb-8 text-sm font-semibold tracking-wide text-neutral-400 uppercase dark:text-neutral-500">
+          How it works
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
           {STEPS.map((step, i) => (
             <div key={step.title} className="glass flex flex-col gap-2 rounded-2xl p-6">
               <span className="text-gradient text-sm font-semibold">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h2 className="font-semibold">{step.title}</h2>
+              <h3 className="font-semibold">{step.title}</h3>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">{step.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="px-8 py-16">
-        <div className="glass mx-auto flex max-w-2xl flex-col gap-4 rounded-2xl p-8 text-center">
-          <h2 className="text-lg font-semibold">Where this is headed</h2>
+      <section className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-16 sm:px-10 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Where this is headed</h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             The marketplace is the first piece of a bigger loop — more members means more waste to
             recycle back into cheap material, which means cheaper prints for everyone.
           </p>
-          <ul className="mx-auto flex max-w-md flex-col gap-2 text-left text-sm text-neutral-500 dark:text-neutral-400">
-            {ROADMAP.map((item) => (
-              <li key={item} className="flex gap-2">
-                <span className="text-neutral-300 dark:text-neutral-700">—</span>
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
+        <ul className="flex flex-col gap-3">
+          {ROADMAP.map((item) => (
+            <li
+              key={item}
+              className="glass rounded-xl px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300"
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="flex flex-col items-center gap-4 px-8 py-20 text-center">
-        <div className="glass-strong flex max-w-md flex-col items-center gap-4 rounded-3xl p-10">
-          <h2 className="text-lg font-semibold">Own a printer? Put it to work.</h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Register it, set your materials, and start earning points fulfilling jobs from members
-            near you.
-          </p>
+      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
+        <div className="glass-strong flex flex-col items-start gap-4 rounded-3xl p-10 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Own a printer? Put it to work.</h2>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+              Register it, set your materials, and start earning points fulfilling jobs from members
+              near you.
+            </p>
+          </div>
           <a
             href="/login"
-            className="btn-gradient rounded-full px-6 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            className="btn-gradient shrink-0 rounded-full px-6 py-2.5 text-sm font-medium whitespace-nowrap text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
             Get started
           </a>

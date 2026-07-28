@@ -25,14 +25,14 @@ export default function LoginPage() {
         href="/"
         className="text-sm text-neutral-500 transition-colors hover:text-neutral-800 dark:hover:text-neutral-200"
       >
-        ← Back to makrd
+        ← Back to maKrd
       </Link>
 
       <div className="glass-strong flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl p-10 text-center">
         <PrinterLoader size={120} />
 
         <div>
-          <h1 className="text-2xl font-semibold">Welcome to makrd</h1>
+          <h1 className="text-2xl font-semibold">Welcome to maKrd</h1>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             Sign in to submit a job, register a printer, or start earning points.
           </p>

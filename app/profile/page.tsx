@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GLASS_INPUT, BTN_PRIMARY } from "@/lib/ui";
 import { updateProfile } from "./actions";
 
-export const metadata: Metadata = { title: "Profile · makrd" };
+export const metadata: Metadata = { title: "Profile · maKrd" };
 
 export default async function ProfilePage({
   searchParams,
@@ -26,7 +26,7 @@ export default async function ProfilePage({
   }
 
   return (
-    <main className="mx-auto max-w-lg p-8">
+    <main className="mx-auto w-full max-w-2xl p-6 sm:p-10">
       <h1 className="mb-6 text-xl font-semibold">Profile</h1>
 
       {updated && (

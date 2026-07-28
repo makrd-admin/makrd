@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Rewards · makrd" };
+export const metadata: Metadata = { title: "Rewards · maKrd" };
 
 const REWARDS = [
   { title: "1kg filament spool", cost: 150, body: "PLA, PETG, or ABS — your choice of color." },
@@ -27,7 +27,7 @@ export default async function ShopPage() {
     .single();
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
+    <main className="mx-auto w-full max-w-4xl p-6 sm:p-10">
       <span className="glass mb-4 inline-block rounded-full px-3 py-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">
         Coming soon — not live yet
       </span>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import NavLinks from "./nav-links";
+import LogoMark from "./logo-mark";
 
 export default async function Nav() {
   const supabase = await createClient();
@@ -21,8 +22,9 @@ export default async function Nav() {
   return (
     <div className="sticky top-4 z-40 flex justify-center px-4">
       <header className="glass-strong flex w-full max-w-5xl items-center gap-3 rounded-2xl px-5 py-2.5">
-        <Link href="/dashboard" className="text-gradient shrink-0 text-base font-semibold">
-          makrd
+        <Link href="/dashboard" className="flex shrink-0 items-center gap-1.5">
+          <LogoMark size={20} />
+          <span className="text-gradient text-base font-semibold">maKrd</span>
         </Link>
         <nav className="no-scrollbar flex flex-1 items-center gap-1 overflow-x-auto">
           <NavLinks />

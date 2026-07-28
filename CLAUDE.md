@@ -72,6 +72,74 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Named and shipped the mascot: **Skipper**, a Benchy with a face (it's
+  a tugboat model already, so "Skipper" doubles as the tour-guide role). Added eyes +
+  a smile to the hull in `printer-loader-realistic.tsx` so the loading screen literally
+  shows Skipper being printed, per the "make it look like a Blender simulation" ask —
+  still pure CSS/SVG (pseudo-3D shading + a perspective rig that orbits), not an actual
+  3D render. New `components/mascot.tsx` — a floating button on every page (added once,
+  in the root layout) showing Skipper with a page-aware dialogue line (different quip
+  per route) that expands into a small FAQ panel (5 common questions, plain
+  `<details>/<summary>`, no extra state needed). Folded the requested "Welcome to the
+  3D print community, maKr!" greeting into the onboarding tour's first step instead of
+  adding a separate banner, since the tour already auto-opens on first sign-in — same
+  effect, one less thing to keep in sync.
+  Verified typecheck/lint/format/build (still 20 routes) and a route smoke test.
+
+- **2026-07-27** — Branding + layout pass, requested in a rapid-fire batch while Mohit
+  was mostly away. Brand wordmark restyled "makrd" → "maKrd" everywhere visible (nav,
+  page titles, hero, tour copy) plus a small logo mark (`components/logo-mark.tsx`,
+  stacked print-layer glyph in the accent gradient) next to it in the nav and landing
+  hero. Community members are now called "maKrs" in copy. Onboarding tour moved from
+  the pre-signin landing page to the dashboard, so it opens after sign-in as asked (was
+  previously unreachable for signed-in users anyway, since `/` redirects them before
+  any client JS runs). Landing page rebuilt as a wider, asymmetric layout (`max-w-7xl`,
+  two-column hero, side-by-side roadmap) instead of narrow centered stacked sections;
+  same "stop mid-aligning, use the screen" treatment applied to dashboard (now a 3-col
+  grid for printers/jobs instead of one stacked column), printers/jobs/community
+  (card grids instead of vertical lists), and widened every remaining page's container.
+  Added `components/printer-loader-realistic.tsx` — a more elaborate loader used only
+  on `app/loading.tsx` (per "not here" — the simple one stays on login/landing): pseudo-
+  3D shading gradients, a layer-line texture clipped to the hull, a glowing hot-end, and
+  a CSS-perspective rig that gently orbits. Still pure CSS/SVG, no 3D engine — an actual
+  Blender-quality render isn't achievable without adding Three.js, which I didn't pull
+  in unasked.
+  **Explicitly not built, flagged rather than attempted:** a community chat/DM system
+  and a full coachmark-style tour engine (tooltips anchored to real buttons across
+  pages) were also requested. Both are substantial features — chat needs new schema +
+  carefully-reviewed RLS for private messages, the tour needs real positioning/targeting
+  logic across every page — and rushing either without Mohit around to review the
+  design (especially DM privacy) risked shipping something broken or insecure. Left the
+  existing modal-carousel tour in place rather than half-replacing it.
+  Verified typecheck/lint/format/build (still 20 routes) and a route smoke test.
+
+- **2026-07-27** — Added automatic job-to-provider matching. When a job is submitted, an
+  `auto_assign_job` AFTER INSERT trigger looks for a "free" provider — active printer,
+  supports the job's material, owner isn't already the provider on any
+  accepted/printing/verification job — and if one exists, immediately assigns the job to
+  them (`status` → `accepted`) instead of leaving it in the open marketplace. Purely
+  additive: manual browse-and-accept on `/jobs` still works exactly as before for
+  whatever doesn't get auto-matched, since CLAUDE.md's confirmed v1 core loop is
+  "providers browse open jobs and accept one" — this doesn't replace that, it just
+  catches the easy case first. `submitJob` now re-fetches the job after insert (the
+  INSERT's own `RETURNING` data reflects pre-trigger state, since the auto-assign
+  trigger's UPDATE happens as a separate statement) and routes to
+  `/dashboard?matched=1` with a confirmation banner when it worked.
+  Found and fixed a real security gap while building this: the `jobs` INSERT policy
+  only checked `requester_id`, not `provider_id` or `status` — a malicious client could
+  have inserted a job pre-marked `accepted` with `provider_id` set to any user. Folded
+  the fix into `set_job_points` (already the BEFORE INSERT trigger for `est_points`) so
+  both are always forced to `null`/`'submitted'` server-side regardless of client input.
+  `auto_assign_job` itself is trigger-only, same lockdown pattern as
+  `handle_new_user`/`handle_job_completed` (revoked from public/anon/authenticated —
+  the advisor flagged it callable by anon before that fix). `get_advisors` clean after
+  (aside from the pre-existing, not-applicable leaked-password-protection warning).
+  Verified typecheck/lint/format/build (still 20 routes) and a route smoke test.
+  **Not tested live end-to-end** (no fake auth users inserted into the production DB to
+  avoid polluting it) — verified via migration applying cleanly, advisors clean, and
+  manual review of the matching query logic instead, consistent with how every other
+  RPC/trigger this session was verified.
+
 - **2026-07-27** — UI polish round + roadmap content pages. Fixed a real bug: `/printers`
   and `/jobs` headers used `flex items-center justify-between` with no wrap, so the
   heading and action button overlapped/crowded on narrow viewports — both now stack on

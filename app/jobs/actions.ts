@@ -40,21 +40,35 @@ export async function submitJob(
     return { error: uploadError.message };
   }
 
-  const { error: insertError } = await supabase.from("jobs").insert({
-    requester_id: user.id,
-    model_file: path,
-    material,
-    quantity,
-    est_points: estPoints,
-  });
+  const { data: inserted, error: insertError } = await supabase
+    .from("jobs")
+    .insert({
+      requester_id: user.id,
+      model_file: path,
+      material,
+      quantity,
+      est_points: estPoints,
+    })
+    .select("id")
+    .single();
 
-  if (insertError) {
+  if (insertError || !inserted) {
     await supabase.storage.from("job-files").remove([path]);
-    return { error: insertError.message };
+    return { error: insertError?.message ?? "Could not submit job" };
   }
 
+  // The insert's own RETURNING data reflects the row as INSERT wrote it, before
+  // the auto_assign_job AFTER trigger's separate UPDATE — re-fetch to see
+  // whether it got auto-matched to a free provider.
+  const { data: finalJob } = await supabase
+    .from("jobs")
+    .select("status")
+    .eq("id", inserted.id)
+    .single();
+
   revalidatePath("/jobs");
-  redirect("/dashboard");
+  revalidatePath("/dashboard");
+  redirect(finalJob?.status === "accepted" ? "/dashboard?matched=1" : "/dashboard");
 }
 
 export async function acceptJob(jobId: string) {

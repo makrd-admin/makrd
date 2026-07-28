@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Nav from "@/components/nav";
+import Mascot from "@/components/mascot";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "makrd",
+  title: "maKrd",
   description: "A community-driven, peer-to-peer 3D printing platform.",
 };
 
@@ -31,6 +32,7 @@ export default function RootLayout({
         </div>
         <Nav />
         {children}
+        <Mascot />
       </body>
     </html>
   );

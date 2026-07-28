@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 
-export const metadata: Metadata = { title: "Filament Recycling · makrd" };
+export const metadata: Metadata = { title: "Filament Recycling · maKrd" };
 
 export default async function RecyclingPage() {
   await requireUser();
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
+    <main className="mx-auto w-full max-w-4xl p-6 sm:p-10">
       <span className="glass mb-4 inline-block rounded-full px-3 py-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">
         Coming soon — not live yet
       </span>

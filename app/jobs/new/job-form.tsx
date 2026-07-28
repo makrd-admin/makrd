@@ -50,6 +50,10 @@ export default function JobForm() {
       <p className="glass rounded-xl px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
         Estimated cost: <strong className="text-gradient">{estimate} pts</strong>
       </p>
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        We&apos;ll try to match this with a free provider automatically — if no one&apos;s available
+        right now, it&apos;ll be listed on the open jobs marketplace instead.
+      </p>
 
       {state.error && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/60 dark:text-red-300">

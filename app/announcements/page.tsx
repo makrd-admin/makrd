@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 
-export const metadata: Metadata = { title: "Announcements · makrd" };
+export const metadata: Metadata = { title: "Announcements · maKrd" };
 
 const ROADMAP = [
   {
@@ -29,7 +29,7 @@ export default async function AnnouncementsPage() {
   await requireUser();
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
+    <main className="mx-auto w-full max-w-4xl p-6 sm:p-10">
       <h1 className="mb-2 text-xl font-semibold">Announcements</h1>
       <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
         What&apos;s live today is the peer-to-peer marketplace — submit a job, register a printer,

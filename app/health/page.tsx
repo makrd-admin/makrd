@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Health · makrd" };
+export const metadata: Metadata = { title: "Health · maKrd" };
 
 export default function HealthPage() {
   return (
