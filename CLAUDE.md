@@ -72,6 +72,32 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — Gave Skipper an actual 3D model instead of the SVG approximation,
+  per "make the benchy realistic, proper 3D, Blender-made" — asked first since it meant
+  a real dependency addition (breaks from the pure-CSS/SVG approach used everywhere
+  else this session), Mohit confirmed. Added `three` + `@react-three/fiber` +
+  `@react-three/drei` (+ `@types/three`). `components/skipper-3d.tsx` builds the hull
+  procedurally (`THREE.Shape` → `ExtrudeGeometry`, no external asset file — there's no
+  actual Benchy mesh asset available to load) with PBR materials
+  (`meshPhysicalMaterial`, clearcoat) and real lights (no HDRI `<Environment>` — that
+  pulls from pmndrs' CDN by default, and a few positioned lights get a decent look
+  without adding an external asset dependency at render time). Same "grow from the
+  build plate" reveal as the SVG version, done properly this time via `useFrame`
+  animating the hull group's Y-scale. `OrbitControls` auto-rotates it for a showcase
+  feel (zoom/pan disabled — this is a presentation, not a free camera).
+  Loading screen swapped to this — `components/skipper-loading-scene.tsx` wraps it in
+  `next/dynamic({ ssr: false })` since WebGL doesn't exist server-side and
+  `app/loading.tsx` is a Server Component (App Router won't allow `ssr: false` directly
+  in one), falling back to the existing SVG `PrinterLoaderRealistic` while the 3D
+  chunk's JS loads.
+  Verified typecheck/lint/format/build (still 20 routes, R3F's JSX intrinics —
+  `<mesh>`, `<ambientLight>`, etc. — typechecked clean) and a route smoke test (no
+  server-side errors). **Could not visually verify the actual WebGL rendering** — no
+  browser available here; clean server logs is the strongest signal I have. Worth a
+  real look once Mohit's back, both that it renders as intended and that it doesn't
+  tank load time/battery on lower-end devices, since a full 3D scene is meaningfully
+  heavier than everything else on this app.
+
 - **2026-07-27** — Added email sign-in (password + one-time code) alongside Google —
   Mohit approved this explicitly since CLAUDE.md gates anything touching auth.
   `/login` now has a "continue with email" toggle revealing `EmailForm`
