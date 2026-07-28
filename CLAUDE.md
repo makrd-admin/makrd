@@ -72,6 +72,51 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-28** — Batch of bug fixes + features from a single long feedback message.
+  Fixed three real bugs: (1) STL/3MF/STEP uploads failing with "something went wrong"
+  every time — root cause was Next's default 1MB Server Action body limit rejecting
+  almost any real model file; raised to 100mb in `next.config.ts` to match the
+  `job-files` Storage bucket's own cap. (2) White-on-white dropdown text — native
+  `<select>` popups render with browser/OS-controlled background regardless of our CSS;
+  fixed with `color-scheme: light dark` plus explicit `<option>` colors (light + dark)
+  in `globals.css`, and gave `GLASS_INPUT` an explicit text color. (3) 3MF/STEP support
+  for job uploads — was already unrestricted, widened the file `accept` attribute to
+  make it discoverable.
+  Shipped the requested features: 25-point signup bonus on every new user (with a
+  ledger entry); switched job pricing from a flat per-unit rate to weight-based
+  (points-per-gram × grams × qty, still server-recomputed and enforced via the
+  `set_job_points` trigger, never trusts the client) — migration
+  `20260728010000_signup_bonus_and_weight_pricing.sql`, applied live; a first-print-free
+  promo (a requester's first-ever job is free if total weight ≤10g), surfaced as an
+  inline banner on the job form when the current input qualifies; a custom/"Other"
+  material text box on both the job form and the printer registration form; a static
+  printer catalog (`lib/printer-models.ts`, 22 common models with real build volumes —
+  a plain data file, not a DB table, since this is fixed reference data with no need for
+  runtime mutation) wired into the printer registration form as a picker that auto-fills
+  make/model/build volume while keeping every field editable after.
+  **Investigated but NOT fixed:** "signs out every time I close the page." Read through
+  `lib/supabase/middleware.ts`, `lib/supabase/client.ts`, and `proxy.ts` — all match
+  Supabase's own documented `@supabase/ssr` pattern exactly, and I couldn't find a
+  code-level cause (also checked Supabase's docs search for known session-persistence
+  issues, nothing conclusive). Two things worth checking on your end: whether this is
+  being tested in a private/incognito window (which never persists cookies across a
+  close by design), and Supabase Dashboard → Authentication → Sessions for a timeout
+  setting shorter than expected — I don't have a tool that can inspect or change that
+  setting. Flagging honestly rather than guessing at a fix.
+  **Deliberately held, not built:** the "convert points to money" cash-payout half of
+  the rewards ask. Converting earned points to a real bank payout is a materially
+  different (and bigger) thing than accepting payment for points — it needs linked
+  payee bank accounts, KYC per payee (not just per requester), and in India specifically
+  has TDS/tax-withholding implications. Didn't want to build that silently inside a
+  larger batch of changes; wanted to flag it and talk through scope first. The
+  "spend points in rewards" half already exists as a preview at `/shop` from earlier in
+  the session — it's UI only so far, not yet wired to actually deduct points.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  dev server smoke-tested (public routes 200, protected routes correctly redirecting).
+  Pushed to `main` and `mohit`, redeployed via the manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow (git-push auto-deploy is still blocked —
+  see the entry below), verified live on `https://makrd.vercel.app`.
+
 - **2026-07-27** — Added buying points with real money via Razorpay — asked first
   since it's both a paid third-party service (CLAUDE.md gate) and a real change to the
   economic model (this was a pure earn-by-labor points economy until now; "no cash
