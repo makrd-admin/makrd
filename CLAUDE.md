@@ -72,6 +72,34 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-27** — UI polish round + roadmap content pages. Fixed a real bug: `/printers`
+  and `/jobs` headers used `flex items-center justify-between` with no wrap, so the
+  heading and action button overlapped/crowded on narrow viewports — both now stack on
+  small screens (`flex-col sm:flex-row`) with the button `whitespace-nowrap`. Nav links
+  now highlight the active page: split `NavLinks` into its own client component using
+  `usePathname()` (the rest of `Nav` stays an async Server Component fetching
+  user/points — Server Components can't use `usePathname`, hence the split). Dashboard
+  was sparse — added a stats row (points/printers/active jobs/completed-as-provider)
+  and a quick-actions grid.
+  Also added `/announcements`, `/recycling`, `/polishing`, `/shop` — Mohit asked for
+  these, including for the two pillars CLAUDE.md explicitly marks out-of-scope for v1
+  (filament recycling, print finishing) plus a points-redemption shop. Built all four as
+  informational "coming soon" content only — no schema, no checkout, no job-type
+  changes — specifically to honor the "do NOT build yet" scope line while still
+  shipping the pages themselves. Nav grew to 6 items so it now scrolls horizontally on
+  narrow screens (`.no-scrollbar` utility) instead of wrapping/breaking.
+  Also cleaned up an unrelated lint break: a stray local `.vercel/output/` directory
+  (leftover from CLI deploy debugging) was getting picked up by `pnpm lint` since it
+  predates `.vercel/**` being in the ESLint ignore list — added the ignore, deleted the
+  stale output.
+  Verified typecheck/lint/format/build (20 routes) and a full route smoke test.
+  **Flagged, not built:** Mohit also asked for email OTP + password sign-in, and an
+  automatic provider-matching/assignment backend (auto-route jobs to free providers
+  instead of manual browse-and-accept). The first touches auth, which CLAUDE.md says to
+  confirm before building — asked, not yet answered. The second is a real scope/design
+  decision (replaces vs. augments the manual accept flow) — planned as an additive
+  `auto_assign_job` RPC so manual accept keeps working either way, building next.
+
 - **2026-07-27** — Visual overhaul, part 2 (interior pages). Extended the liquid-glass
   treatment from part 1 to every authenticated page: dashboard (points balance now a
   hero stat tile), printers list + registration form, jobs marketplace + submission

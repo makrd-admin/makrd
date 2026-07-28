@@ -23,11 +23,11 @@ export default async function JobsPage() {
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold">Open jobs</h1>
         <Link
           href="/jobs/new"
-          className="btn-gradient rounded-full px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          className="btn-gradient shrink-0 self-start rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap text-white transition-transform hover:scale-[1.03] active:scale-[0.98] sm:self-auto"
         >
           Submit a job
         </Link>

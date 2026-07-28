@@ -1,0 +1,40 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/printers", label: "Printers" },
+  { href: "/jobs", label: "Jobs" },
+  { href: "/community", label: "Community" },
+  { href: "/shop", label: "Rewards" },
+  { href: "/announcements", label: "Announcements" },
+];
+
+export default function NavLinks() {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {LINKS.map((link) => {
+        const isActive =
+          pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={isActive ? "page" : undefined}
+            className={
+              isActive
+                ? "btn-gradient rounded-full px-3 py-1.5 text-sm font-medium text-white"
+                : "rounded-full px-3 py-1.5 text-sm text-neutral-600 transition-colors hover:bg-black/5 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-neutral-100"
+            }
+          >
+            {link.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}

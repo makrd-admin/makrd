@@ -14,6 +14,13 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
+const QUICK_ACTIONS = [
+  { href: "/jobs/new", label: "Submit a job", hint: "Upload a model, get it printed" },
+  { href: "/printers/new", label: "Register a printer", hint: "Start earning points" },
+  { href: "/jobs", label: "Browse open jobs", hint: "Find work for your printer" },
+  { href: "/community", label: "Community", hint: "See who's on the network" },
+];
+
 export default async function DashboardPage() {
   const user = await requireUser();
   const supabase = await createClient();
@@ -38,18 +45,48 @@ export default async function DashboardPage() {
         .order("created_at", { ascending: false }),
     ]);
 
+  const completedAsProvider = (jobsImPrinting ?? []).filter((j) => j.status === "completed").length;
+  const activeJobs = [...(myJobs ?? []), ...(jobsImPrinting ?? [])].filter((j) =>
+    ["submitted", "accepted", "printing", "verification"].includes(j.status),
+  ).length;
+
+  const stats = [
+    { label: "Points", value: profile?.points_balance ?? 0 },
+    { label: "Printers", value: printers?.length ?? 0 },
+    { label: "Active jobs", value: activeJobs },
+    { label: "Jobs completed as provider", value: completedAsProvider },
+  ];
+
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-8 p-8">
-      <section className="glass-strong flex items-center justify-between rounded-3xl p-8">
-        <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Everything you own and everything you owe, in one place.
-          </p>
+      <section className="glass-strong rounded-3xl p-8">
+        <h1 className="text-2xl font-semibold">Welcome back</h1>
+        <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
+          Everything you own and everything you owe, in one place.
+        </p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="glass rounded-2xl p-4 text-center">
+              <p className="text-gradient text-2xl font-semibold">{stat.value}</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{stat.label}</p>
+            </div>
+          ))}
         </div>
-        <div className="text-right">
-          <p className="text-gradient text-3xl font-semibold">{profile?.points_balance ?? 0}</p>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">points</p>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Quick actions</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {QUICK_ACTIONS.map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="glass flex flex-col gap-1 rounded-2xl p-5 transition-transform hover:scale-[1.01]"
+            >
+              <span className="font-medium">{action.label}</span>
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">{action.hint}</span>
+            </Link>
+          ))}
         </div>
       </section>
 

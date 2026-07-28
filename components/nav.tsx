@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-
-const LINKS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/printers", label: "Printers" },
-  { href: "/jobs", label: "Jobs" },
-  { href: "/community", label: "Community" },
-];
+import NavLinks from "./nav-links";
 
 export default async function Nav() {
   const supabase = await createClient();
@@ -26,22 +20,14 @@ export default async function Nav() {
 
   return (
     <div className="sticky top-4 z-40 flex justify-center px-4">
-      <header className="glass-strong flex w-full max-w-4xl items-center justify-between rounded-2xl px-5 py-2.5">
-        <nav className="flex items-center gap-1">
-          <Link href="/dashboard" className="text-gradient mr-3 text-base font-semibold">
-            makrd
-          </Link>
-          {LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full px-3 py-1.5 text-sm text-neutral-600 transition-colors hover:bg-black/5 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-neutral-100"
-            >
-              {link.label}
-            </Link>
-          ))}
+      <header className="glass-strong flex w-full max-w-5xl items-center gap-3 rounded-2xl px-5 py-2.5">
+        <Link href="/dashboard" className="text-gradient shrink-0 text-base font-semibold">
+          makrd
+        </Link>
+        <nav className="no-scrollbar flex flex-1 items-center gap-1 overflow-x-auto">
+          <NavLinks />
         </nav>
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex shrink-0 items-center gap-3 text-sm">
           <Link
             href="/profile"
             className="rounded-full bg-black/5 px-3 py-1 font-medium text-neutral-700 transition-colors hover:bg-black/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/15"
