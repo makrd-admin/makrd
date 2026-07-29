@@ -72,6 +72,59 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-28 (night)** — 1:1 direct messages, then a full landing-page/visual push
+  after Mohit linked several reference sites.
+  **Added a real DM system.** New `direct_messages` table (RLS: read only your own
+  sent/received rows, insert only as yourself — same trivial-but-safe pattern as the
+  community chat, scoped to a pair instead of everyone). `/messages` is an inbox listing
+  every other member with their latest message preview, most-recent conversations
+  first; `/messages/[userId]` is a live per-conversation thread via Realtime. "Message"
+  links added to printer cards on `/community`, and job detail pages now show
+  "Chat with your printer" / "Chat with requester" once a job has an assigned provider,
+  linking straight to that DM thread. This is the DM feature flagged as deferred
+  earlier this session (needed its own privacy-reviewed RLS design) — built now that it
+  was asked for directly.
+  **Rebuilt the landing page**, chasing references Mohit linked (creativeglu.ai 403'd
+  for me; organimo.com fetched fine — expressive typography, scroll reveals, minimalist
+  layout). Added scroll-triggered reveal animations to every section
+  (`components/reveal.tsx`), a new "Meet the network" section showing real printer
+  specs from the catalog (careful to frame this as *member-owned* printers already on
+  the network, not a makrd-branded hardware product — the modular printer is an
+  unbuilt future pillar per PRODUCT.md, out of scope to imply otherwise), and a
+  stylized (not physically simulated) flowing-water transition
+  (`components/water-flow.tsx` — layered animated SVG waves) with the Benchy hull
+  drifting and bobbing across it into the sign-in CTA.
+  **Then pushed further toward lusion.co/activetheory.net** — both genuinely
+  high-production WebGL agency portfolio sites. Flagged the trade-off first (new
+  dependency, real complexity/perf cost) via AskUserQuestion; Mohit chose to go for it.
+  Added **GSAP + ScrollTrigger** (first animation library in the project — previously
+  everything was deliberately pure CSS/SVG/Three.js) and built: a site-wide trailing
+  custom cursor (`components/custom-cursor.tsx`, disabled on touch devices), a
+  word-by-word staggered hero headline reveal with scroll-driven parallax on the 3D
+  model (`components/cinematic-hero.tsx` — the parallax only touches a DOM wrapper's
+  CSS transform, not the Three.js internals, so a GSAP mistake can't break the WebGL
+  scene), rebuilt `Reveal` on ScrollTrigger instead of a raw IntersectionObserver for
+  consistent easing, and a hand-written fresnel rim-light shader on the Skipper hull
+  (`components/skipper-3d.tsx` — the one bit of custom GLSL in the app, isolated on its
+  own glow-shell mesh so a shader bug can't break the base hull).
+  **Also made the persistent corner mascot show the real 3D model on every page now**,
+  not just when its panel opens — previously kept on the flat SVG face in its collapsed
+  state specifically to avoid a WebGL canvas on every page load. That trade-off is now
+  made deliberately per explicit request ("the same realistic benchy should be on every
+  page"). Combined with the new cursor/parallax/shader work, every single page now
+  carries a live Three.js scene plus GSAP animation — worth watching load time and
+  battery impact on lower-end devices once there's a real browser to check it in.
+  **Could not visually verify any of the WebGL/shader/GSAP work in a real browser** — no
+  browser tool available this session (Mohit said to skip claude-in-chrome, it wasn't
+  working). Clean server logs and a successful production build are the strongest
+  signals available; genuinely worth a real look once Mohit's back, both that it
+  renders as intended and that performance holds up.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  `get_advisors` clean (same pre-existing expected warnings only); dev-server smoke
+  tests after each sub-batch. Pushed to `main` and `mohit` across several commits,
+  redeployed via the manual `vercel build --prod` + `vercel deploy --prebuilt --prod`
+  workflow after each, verified live on `https://makrd.vercel.app`.
+
 - **2026-07-28 (evening)** — Data reset + no-more-free-prints rule, community chat,
   nav/mascot/theme fixes, from another rapid-fire feedback batch.
   **Reset all job and points history.** Cleared `jobs` and `points_ledger` entirely and
