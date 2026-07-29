@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/printers", label: "Printers" },
   { href: "/jobs", label: "Jobs" },
   { href: "/community", label: "Community" },
+  { href: "/messages", label: "Messages" },
   { href: "/shop", label: "Rewards" },
   // Buying points with real money (Razorpay) is on hold — points are
   // labour-driven for now. Re-add once Razorpay is ready to go live.

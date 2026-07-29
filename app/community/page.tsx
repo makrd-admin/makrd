@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import CommunityChat from "./community-chat";
@@ -6,7 +7,7 @@ import CommunityChat from "./community-chat";
 export const metadata: Metadata = { title: "Community · maKrd" };
 
 export default async function CommunityPage() {
-  await requireUser();
+  const user = await requireUser();
   const supabase = await createClient();
 
   // Never select code_word_hash here — this is a public-to-members directory,
@@ -14,7 +15,7 @@ export default async function CommunityPage() {
   const { data: printers, error } = await supabase
     .from("printers")
     .select(
-      "id, make, model, build_volume, location, description, materials, status, created_at, owner:profiles(display_name)",
+      "id, make, model, build_volume, location, description, materials, status, created_at, owner_id, owner:profiles(display_name)",
     )
     .eq("status", "active")
     .order("created_at", { ascending: false });
@@ -62,6 +63,14 @@ export default async function CommunityPage() {
                     <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
                       {printer.description}
                     </p>
+                  )}
+                  {printer.owner_id !== user.id && (
+                    <Link
+                      href={`/messages/${printer.owner_id}`}
+                      className="mt-2 inline-block text-sm font-medium underline underline-offset-2"
+                    >
+                      Message {printer.owner?.display_name ?? "this maKr"}
+                    </Link>
                   )}
                 </li>
               ))}

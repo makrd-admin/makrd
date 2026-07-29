@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -66,10 +67,19 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         {fileUrl && (
           <a
             href={fileUrl}
-            className="mb-6 inline-block text-sm font-medium underline underline-offset-2"
+            className="mb-3 inline-block text-sm font-medium underline underline-offset-2"
           >
             Download model file
           </a>
+        )}
+
+        {job.provider_id && (isRequester || isProvider) && (
+          <Link
+            href={`/messages/${isRequester ? job.provider_id : job.requester_id}`}
+            className={`${BTN_SECONDARY} mb-6 inline-block`}
+          >
+            {isRequester ? "Chat with your printer" : "Chat with requester"}
+          </Link>
         )}
 
         <div className="flex flex-col gap-3">
