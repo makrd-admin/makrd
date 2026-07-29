@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import NavLinks from "./nav-links";
 import LogoMark from "./logo-mark";
+import ScrollHide from "./scroll-hide";
 
 export default async function Nav() {
   const supabase = await createClient();
@@ -20,7 +21,7 @@ export default async function Nav() {
     .single();
 
   return (
-    <div className="sticky top-4 z-40 flex justify-center px-4">
+    <ScrollHide>
       <header className="glass-strong flex w-full max-w-5xl items-center gap-3 rounded-2xl px-5 py-2.5">
         <Link href="/dashboard" className="flex shrink-0 items-center gap-1.5">
           <LogoMark size={20} />
@@ -46,6 +47,6 @@ export default async function Nav() {
           </form>
         </div>
       </header>
-    </div>
+    </ScrollHide>
   );
 }

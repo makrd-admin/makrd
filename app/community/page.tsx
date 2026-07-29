@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import CommunityChat from "./community-chat";
 
 export const metadata: Metadata = { title: "Community · maKrd" };
 
@@ -29,41 +30,47 @@ export default async function CommunityPage() {
         Every printer registered on the network. Submit a job and one of these maKrs can pick it up.
       </p>
 
-      {printers.length === 0 ? (
-        <p className="glass rounded-2xl p-6 text-center text-neutral-500 dark:text-neutral-400">
-          No printers registered yet — be the first.
-        </p>
-      ) : (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {printers.map((printer) => (
-            <li key={printer.id} className="glass rounded-2xl p-5">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {printer.make} {printer.model}
-                </span>
-                <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
-                  {printer.owner?.display_name ?? "A maKr"}
-                </span>
-              </div>
-              {printer.location && (
-                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                  {printer.location}
-                </p>
-              )}
-              {printer.materials.length > 0 && (
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  Materials: {printer.materials.join(", ")}
-                </p>
-              )}
-              {printer.description && (
-                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                  {printer.description}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {printers.length === 0 ? (
+            <p className="glass rounded-2xl p-6 text-center text-neutral-500 dark:text-neutral-400">
+              No printers registered yet — be the first.
+            </p>
+          ) : (
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {printers.map((printer) => (
+                <li key={printer.id} className="glass rounded-2xl p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">
+                      {printer.make} {printer.model}
+                    </span>
+                    <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
+                      {printer.owner?.display_name ?? "A maKr"}
+                    </span>
+                  </div>
+                  {printer.location && (
+                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                      {printer.location}
+                    </p>
+                  )}
+                  {printer.materials.length > 0 && (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      Materials: {printer.materials.join(", ")}
+                    </p>
+                  )}
+                  {printer.description && (
+                    <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                      {printer.description}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <CommunityChat />
+      </div>
     </main>
   );
 }

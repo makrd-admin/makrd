@@ -4,7 +4,6 @@ import { useActionState, useState, useTransition, type ChangeEvent, type FormEve
 import {
   MATERIALS,
   OTHER_MATERIAL,
-  FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS,
   estimatePoints,
   estimateWeightGramsFromVolume,
 } from "@/lib/points";
@@ -39,8 +38,6 @@ export default function JobForm() {
   } catch {
     estimate = 0;
   }
-  const qualifiesForFreePrint =
-    weightGrams * (quantity || 1) <= FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS;
   const busy = isUploading || isPending || isTransitionPending;
 
   function recomputeAutoWeight(vol: number, mat: string) {
@@ -124,13 +121,6 @@ export default function JobForm() {
 
   return (
     <form onSubmit={handleSubmit} className="glass-strong flex flex-col gap-4 rounded-3xl p-8">
-      {qualifiesForFreePrint && (
-        <p className="glass rounded-xl px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">
-          🎁 Your first print is free, up to {FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS}g total — this one
-          qualifies if it&apos;s your first job.
-        </p>
-      )}
-
       <label className="flex flex-col gap-1 text-sm">
         Model file
         <input
@@ -212,10 +202,7 @@ export default function JobForm() {
       </label>
 
       <p className="glass rounded-xl px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
-        Estimated cost:{" "}
-        <strong className="text-gradient">
-          {qualifiesForFreePrint ? "Free (if first job)" : `${estimate} pts`}
-        </strong>
+        Estimated cost: <strong className="text-gradient">{estimate} pts</strong>
       </p>
       <p className="text-xs text-neutral-500 dark:text-neutral-400">
         We&apos;ll try to match this with a free provider automatically — if no one&apos;s available

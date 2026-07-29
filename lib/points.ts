@@ -11,13 +11,11 @@ const DEFAULT_RATE = 0.7; // custom/"Other" materials not in the list above
 
 export type MaterialValue = (typeof MATERIALS)[number]["value"] | typeof OTHER_MATERIAL;
 
-export const FIRST_PRINT_FREE_WEIGHT_LIMIT_GRAMS = 10;
-
 /**
  * Display-only estimate — the database recomputes and enforces the real
- * price server-side (see set_job_points), including the first-print-free
- * promo, so this can't be tampered with in transit. Mirrors the SQL rates;
- * keep both in sync manually if pricing changes.
+ * price server-side (see set_job_points), so this can't be tampered with in
+ * transit. Every job costs at least 1 point, no exceptions — mirrors the
+ * SQL rates; keep both in sync manually if pricing changes.
  */
 export function estimatePoints(material: string, weightGrams: number, quantity: number): number {
   if (!Number.isFinite(weightGrams) || weightGrams < 1) {

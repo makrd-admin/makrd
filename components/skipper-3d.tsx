@@ -60,13 +60,13 @@ function Hull() {
   return (
     <group ref={groupRef} position={[0, -0.05, 0]}>
       <mesh geometry={geometry} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#8b5cf6" roughness={0.35} metalness={0.15} clearcoat={0.5} />
+        <meshPhysicalMaterial color="#16a34a" roughness={0.35} metalness={0.15} clearcoat={0.5} />
       </mesh>
 
       {/* funnel */}
       <mesh position={[0, 0.5, 0]} castShadow>
         <cylinderGeometry args={[0.06, 0.07, 0.22, 16]} />
-        <meshPhysicalMaterial color="#f59e0b" roughness={0.3} metalness={0.2} clearcoat={0.5} />
+        <meshPhysicalMaterial color="#bef264" roughness={0.3} metalness={0.2} clearcoat={0.5} />
       </mesh>
 
       {/* face, on the cabin front */}
@@ -115,8 +115,8 @@ export default function Skipper3D({ size = 320 }: { size?: number }) {
       <Canvas shadows camera={{ position: [2.4, 1.6, 2.8], fov: 38 }}>
         <ambientLight intensity={0.55} />
         <directionalLight position={[3, 5, 2]} intensity={1.4} castShadow />
-        <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#a855f7" />
-        <pointLight position={[0, 1.5, 2]} intensity={0.3} color="#f59e0b" />
+        <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#22c55e" />
+        <pointLight position={[0, 1.5, 2]} intensity={0.3} color="#bef264" />
         <Hull />
         <BuildPlate />
         <OrbitControls

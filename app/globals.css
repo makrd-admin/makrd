@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f6fb;
-  --foreground: #14141c;
+  --background: #f5faf6;
+  --foreground: #0a0f0b;
 
   /* Liquid-glass surfaces */
   --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-bg-strong: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(20, 20, 28, 0.08);
-  --glass-shadow: rgba(20, 20, 28, 0.08);
+  --glass-border: rgba(10, 15, 11, 0.08);
+  --glass-shadow: rgba(10, 15, 11, 0.08);
 
-  /* Brand accents — indigo/violet (tech) + amber (hot filament) */
-  --accent-from: #6366f1;
-  --accent-via: #a855f7;
-  --accent-to: #ec4899;
-  --accent-warm: #f59e0b;
+  /* Brand accents — black & green */
+  --accent-from: #0f2f1d;
+  --accent-via: #16a34a;
+  --accent-to: #4ade80;
+  --accent-warm: #a3e635;
 
-  --blob-1: #818cf8;
-  --blob-2: #f0abfc;
-  --blob-3: #fbbf24;
+  --blob-1: #16a34a;
+  --blob-2: #052e16;
+  --blob-3: #4ade80;
 }
 
 @theme inline {
@@ -30,17 +30,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #08080d;
-    --foreground: #f2f2f7;
+    --background: #050705;
+    --foreground: #eafbf0;
 
     --glass-bg: rgba(255, 255, 255, 0.06);
     --glass-bg-strong: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --glass-shadow: rgba(0, 0, 0, 0.5);
+    --glass-border: rgba(74, 222, 128, 0.14);
+    --glass-shadow: rgba(0, 0, 0, 0.6);
 
-    --blob-1: #4338ca;
-    --blob-2: #86198f;
-    --blob-3: #b45309;
+    --accent-from: #052e16;
+    --accent-via: #22c55e;
+    --accent-to: #86efac;
+    --accent-warm: #bef264;
+
+    --blob-1: #16a34a;
+    --blob-2: #052e16;
+    --blob-3: #4ade80;
   }
 }
 

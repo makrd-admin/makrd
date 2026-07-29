@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import MascotFace from "./mascot-face";
+import Skipper3DInline from "./skipper-3d-inline";
 
 const DIALOGUE: { match: (path: string) => boolean; lines: string[] }[] = [
   {
@@ -102,7 +103,9 @@ export default function Mascot() {
       {isOpen && (
         <div className="glass-strong flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-3xl p-5 sm:w-80">
           <div className="flex items-start gap-2">
-            <MascotFace size={32} />
+            <div className="shrink-0">
+              <Skipper3DInline size={72} />
+            </div>
             <p className="text-sm text-neutral-700 dark:text-neutral-300">
               <span className="font-semibold">Skipper: </span>
               {dialogue}
