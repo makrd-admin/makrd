@@ -72,6 +72,49 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-29 (early)** — Real 3DBenchy model, a fixed cursor bug that broke clicking,
+  and a properly-glass nav — a fast follow-up to the previous entry's visual push.
+  **Swapped the procedural hull for the actual Benchy.** Mohit provided a real
+  `3dbenchy.stl` (225,706 triangles, 11MB — a raw/undecimated scan, too heavy to ship
+  as-is, especially duplicated in the always-visible mascot). Wrote a one-off Node
+  script using Three.js's `SimplifyModifier` to decimate it to 23,863 triangles/1.2MB —
+  had to `mergeVertices()` first since STL exports as unindexed triangle soup with no
+  shared vertices, which the edge-collapse decimator needs to find neighbors at all
+  (failed with "No next vertex" until that fix). Verified the decimated output's
+  bounding box (60×31×48mm) matches real Benchy proportions before wiring it in.
+  `public/models/benchy.stl` is now the source of truth for both the persistent mascot
+  and the loading screen (`components/benchy-model.tsx` loads/centers/normalizes it via
+  Three's `STLLoader`); dropped the old cartoon eyes/funnel overlay since it didn't
+  belong on what's now meant to read as a realistic render.
+  **Rebuilt the landing hero as a pinned, scroll-scrubbed scene**
+  (`components/benchy-scroll-scene.tsx`, replacing the earlier `CinematicHero`, now
+  deleted): the real model builds up from the plate while the camera orbits around it
+  — POV drifting around a static model, not the model spinning — as the user scrolls,
+  with product-pitch text panels swapping at fixed scroll checkpoints. Camera/scale
+  updates read a ref each frame rather than triggering React re-renders on scroll.
+  **Fixed a real bug Mohit hit live: the custom cursor made the site unusable.** The
+  previous version hid the native OS cursor from page load; if the custom one failed to
+  render for any reason (or just hadn't received a mousemove yet), there was no visible
+  cursor anywhere, making it impossible to tell where a click would land. Redesigned
+  per Mohit's direction: the native cursor is untouched through most of the page, and a
+  soft glowing ring only takes over once scroll reaches a marker just before the final
+  sign-in section — by then mousemove has already fired many times, so the custom
+  cursor is guaranteed to be positioned correctly before the native one ever hides.
+  Scrolling back up restores the native cursor.
+  **Gave the nav real glass.** Added `.glass-nav` — heavier blur/saturation, a brighter
+  top-edge highlight, a subtle gradient sheen — specifically for the floating nav pill,
+  instead of reusing the same `.glass-strong` every other panel uses.
+  **Still true, worth restating: none of the WebGL/shader/GSAP/scroll work has been
+  visually verified in a real browser.** Attempted the `claude-in-chrome` skill this
+  session per Mohit's request; it errored out ("Tool result missing due to internal
+  error") despite him confirming access was granted — flagged, not resolved, and Mohit
+  said to leave it for now. Everything here is verified only via clean typecheck/lint/
+  build and dev-server smoke tests (confirmed `/models/benchy.stl` serves at the
+  correct 1.19MB, confirmed the scroll-scene's first stage server-renders) — a real,
+  still-open gap until someone can actually click through it in a browser.
+  Pushed to `main` and `mohit`, redeployed via the manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow, verified live on `https://makrd.vercel.app`.
+
 - **2026-07-28 (night)** — 1:1 direct messages, then a full landing-page/visual push
   after Mohit linked several reference sites.
   **Added a real DM system.** New `direct_messages` table (RLS: read only your own
