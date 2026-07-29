@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Nav from "@/components/nav";
 import Mascot from "@/components/mascot";
+import CustomCursor from "@/components/custom-cursor";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({
         <div className="ambient-bg">
           <div className="blob-3" />
         </div>
+        <CustomCursor />
         <Nav />
         {children}
         <Mascot />

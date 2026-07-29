@@ -5,6 +5,63 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
+// Fresnel rim-light: a thin glowing shell around the hull, brightest at
+// grazing angles (where the surface normal points away from the camera).
+// Standard fresnel-glow GLSL pattern — the one bit of hand-written shader
+// code in this app, kept small and isolated on its own shell mesh so a
+// mistake here can't break the base hull's visibility.
+const FRESNEL_VERTEX = `
+  varying vec3 vNormal;
+  varying vec3 vViewDir;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewDir = normalize(-mvPosition.xyz);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const FRESNEL_FRAGMENT = `
+  varying vec3 vNormal;
+  varying vec3 vViewDir;
+  uniform vec3 glowColor;
+  uniform float power;
+  void main() {
+    float fresnel = pow(1.0 - clamp(dot(normalize(vNormal), normalize(vViewDir)), 0.0, 1.0), power);
+    gl_FragColor = vec4(glowColor, fresnel * 0.85);
+  }
+`;
+
+function FresnelGlow({
+  geometry,
+  color = "#4ade80",
+}: {
+  geometry: THREE.BufferGeometry;
+  color?: string;
+}) {
+  const uniforms = useMemo(
+    () => ({
+      glowColor: { value: new THREE.Color(color) },
+      power: { value: 2.2 },
+    }),
+    [color],
+  );
+
+  return (
+    <mesh geometry={geometry} scale={1.045}>
+      <shaderMaterial
+        vertexShader={FRESNEL_VERTEX}
+        fragmentShader={FRESNEL_FRAGMENT}
+        uniforms={uniforms}
+        transparent
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
 const GROW_SECONDS = 3.2;
 const HOLD_SECONDS = 1.4;
 const CYCLE_SECONDS = GROW_SECONDS + HOLD_SECONDS;
@@ -62,6 +119,7 @@ function Hull() {
       <mesh geometry={geometry} castShadow receiveShadow>
         <meshPhysicalMaterial color="#16a34a" roughness={0.35} metalness={0.15} clearcoat={0.5} />
       </mesh>
+      <FresnelGlow geometry={geometry} />
 
       {/* funnel */}
       <mesh position={[0, 0.5, 0]} castShadow>

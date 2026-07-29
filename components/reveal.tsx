@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /** Fades and slides its children up into place the first time they scroll into view. */
 export default function Reveal({
@@ -13,33 +17,35 @@ export default function Reveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.15 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        node,
+        { y: 32, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          delay: delayMs / 1000,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: node,
+            start: "top 88%",
+            once: true,
+          },
+        },
+      );
+    });
+
+    return () => ctx.revert();
+  }, [delayMs]);
 
   return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-      } ${className}`}
-      style={{ transitionDelay: `${delayMs}ms` }}
-    >
+    <div ref={ref} className={className}>
       {children}
     </div>
   );

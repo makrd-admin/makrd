@@ -430,3 +430,43 @@ select option {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Custom cursor: a tight dot plus a trailing ring that eases toward it.
+   Desktop pointers only — see the (pointer: coarse) check in the component.
+   --------------------------------------------------------------------- */
+body.custom-cursor-active,
+body.custom-cursor-active * {
+  cursor: none !important;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-to);
+}
+
+.cursor-ring {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--accent-to);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+}

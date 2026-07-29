@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import SkipperLoadingScene from "@/components/skipper-loading-scene";
-import LogoMark from "@/components/logo-mark";
+import CinematicHero from "@/components/cinematic-hero";
 import Reveal from "@/components/reveal";
 import WaterFlow from "@/components/water-flow";
 import { PRINTER_MODELS } from "@/lib/printer-models";
@@ -41,37 +40,8 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="flex flex-col items-start gap-6">
-          <div className="flex items-center gap-2">
-            <LogoMark size={32} />
-            <span className="text-gradient text-lg font-semibold">maKrd</span>
-          </div>
-          <h1 className="text-5xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
-            Get anything <span className="text-gradient">3D printed</span> by someone near you.
-          </h1>
-          <p className="max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-            A community-owned, peer-to-peer printing network. Pay in points — earn them by printing
-            for others, or top up anytime.
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <a
-              href="/login"
-              className="btn-gradient rounded-full px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
-            >
-              Sign in with Google
-            </a>
-            <a
-              href="/announcements"
-              className="rounded-full px-5 py-3 text-sm font-medium text-neutral-600 underline underline-offset-4 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-            >
-              See what&apos;s coming
-            </a>
-          </div>
-        </div>
-        <div className="flex justify-center lg:justify-end">
-          <SkipperLoadingScene size={360} />
-        </div>
+      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
+        <CinematicHero />
       </section>
 
       <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
