@@ -364,3 +364,69 @@ select option {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Landing-page water transition: stylized (not simulated) flowing water
+   with the Benchy hull drifting and bobbing on the surface.
+   --------------------------------------------------------------------- */
+@keyframes water-drift-1 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-200px);
+  }
+}
+
+@keyframes water-drift-2 {
+  from {
+    transform: translateX(-200px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes water-boat-across {
+  0% {
+    left: -8%;
+  }
+  100% {
+    left: 104%;
+  }
+}
+
+@keyframes water-boat-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+.water-wave-1 {
+  animation: water-drift-1 9s linear infinite;
+}
+
+.water-wave-2 {
+  animation: water-drift-2 6s linear infinite;
+}
+
+.water-boat-drift {
+  animation: water-boat-across 16s linear infinite;
+}
+
+.water-boat-bob {
+  animation: water-boat-bob 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-wave-1,
+  .water-wave-2,
+  .water-boat-drift,
+  .water-boat-bob {
+    animation: none;
+  }
+}

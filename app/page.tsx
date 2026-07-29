@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import PrinterLoader from "@/components/printer-loader";
+import SkipperLoadingScene from "@/components/skipper-loading-scene";
 import LogoMark from "@/components/logo-mark";
+import Reveal from "@/components/reveal";
+import WaterFlow from "@/components/water-flow";
+import { PRINTER_MODELS } from "@/lib/printer-models";
 
 const STEPS = [
   {
@@ -14,7 +17,7 @@ const STEPS = [
   },
   {
     title: "Earn or spend points",
-    body: "Printing for others earns points; getting something printed spends them. Need more? Top up anytime.",
+    body: "Printing for others earns points; getting something printed spends them.",
   },
 ];
 
@@ -23,6 +26,8 @@ const ROADMAP = [
   "Automated print finishing — resin-coating and polishing to a professional finish",
   "A fully-modular, ultra-affordable printer for the network",
 ];
+
+const FEATURED_PRINTERS = PRINTER_MODELS.slice(0, 4);
 
 export default async function Home() {
   const supabase = await createClient();
@@ -65,64 +70,89 @@ export default async function Home() {
           </div>
         </div>
         <div className="flex justify-center lg:justify-end">
-          <PrinterLoader size={220} />
+          <SkipperLoadingScene size={360} />
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
-        <h2 className="mb-8 text-sm font-semibold tracking-wide text-neutral-400 uppercase dark:text-neutral-500">
-          How it works
-        </h2>
+        <Reveal>
+          <h2 className="mb-8 text-sm font-semibold tracking-wide text-neutral-400 uppercase dark:text-neutral-500">
+            How it works
+          </h2>
+        </Reveal>
         <div className="grid gap-6 sm:grid-cols-3">
           {STEPS.map((step, i) => (
-            <div key={step.title} className="glass flex flex-col gap-2 rounded-2xl p-6">
-              <span className="text-gradient text-sm font-semibold">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="font-semibold">{step.title}</h3>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">{step.body}</p>
-            </div>
+            <Reveal key={step.title} delayMs={i * 120}>
+              <div className="glass flex h-full flex-col gap-2 rounded-2xl p-6">
+                <span className="text-gradient text-sm font-semibold">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="font-semibold">{step.title}</h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{step.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
+        <Reveal>
+          <h2 className="mb-2 text-lg font-semibold">Meet the network</h2>
+          <p className="mb-8 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
+            Every printer on maKrd is owned and run by a real member — not a warehouse. Here&apos;s
+            a slice of what&apos;s already registered.
+          </p>
+        </Reveal>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURED_PRINTERS.map((printer, i) => (
+            <Reveal key={`${printer.make}-${printer.model}`} delayMs={i * 100}>
+              <div className="glass flex h-full flex-col gap-1 rounded-2xl p-5">
+                <p className="font-semibold">{printer.make}</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">{printer.model}</p>
+                <p className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
+                  Build volume: {printer.buildVolume}
+                </p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-16 sm:px-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
+        <Reveal>
           <h2 className="mb-3 text-lg font-semibold">Where this is headed</h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             The marketplace is the first piece of a bigger loop — more members means more waste to
             recycle back into cheap material, which means cheaper prints for everyone.
           </p>
-        </div>
+        </Reveal>
         <ul className="flex flex-col gap-3">
-          {ROADMAP.map((item) => (
-            <li
-              key={item}
-              className="glass rounded-xl px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300"
-            >
-              {item}
-            </li>
+          {ROADMAP.map((item, i) => (
+            <Reveal key={item} delayMs={i * 100}>
+              <li className="glass rounded-xl px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
+                {item}
+              </li>
+            </Reveal>
           ))}
         </ul>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
-        <div className="glass-strong flex flex-col items-start gap-4 rounded-3xl p-10 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">Own a printer? Put it to work.</h2>
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-              Register it, set your materials, and start earning points fulfilling jobs from members
-              near you.
-            </p>
-          </div>
+      <WaterFlow>
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 text-center">
+          <h2 className="text-2xl font-semibold text-white sm:text-3xl">
+            Your next print is one signup away.
+          </h2>
+          <p className="max-w-xl text-white/80">
+            Register a printer, submit a job, or just come see who&apos;s already on the network.
+          </p>
           <a
             href="/login"
-            className="btn-gradient shrink-0 rounded-full px-6 py-2.5 text-sm font-medium whitespace-nowrap text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            className="mt-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-neutral-900 transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
-            Get started
+            Sign in with Google
           </a>
         </div>
-      </section>
+      </WaterFlow>
     </main>
   );
 }

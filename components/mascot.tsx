@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import MascotFace from "./mascot-face";
 import Skipper3DInline from "./skipper-3d-inline";
 
 const DIALOGUE: { match: (path: string) => boolean; lines: string[] }[] = [
@@ -135,7 +134,7 @@ export default function Mascot() {
         aria-label={isOpen ? "Close Skipper" : "Open Skipper, the maKrd mascot"}
         className="glass-strong flex items-center gap-2 rounded-full p-2 pr-4 shadow-lg transition-transform hover:scale-105"
       >
-        <MascotFace size={36} />
+        <Skipper3DInline size={40} />
         {!isOpen && (
           <span className="hidden max-w-40 truncate text-xs text-neutral-600 sm:inline dark:text-neutral-300">
             {dialogue}
