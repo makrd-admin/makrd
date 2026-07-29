@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import BenchyScrollScene from "@/components/benchy-scroll-scene";
 import Reveal from "@/components/reveal";
 import WaterFlow from "@/components/water-flow";
+import LandingTheme from "@/components/landing-theme";
 import { PRINTER_MODELS } from "@/lib/printer-models";
 
 const STEPS = [
@@ -40,6 +41,7 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
+      <LandingTheme />
       <BenchyScrollScene />
 
       <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
@@ -105,7 +107,6 @@ export default async function Home() {
         </ul>
       </section>
 
-      <div id="cursor-activate-marker" />
       <WaterFlow>
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 text-center">
           <h2 className="text-2xl font-semibold text-white sm:text-3xl">

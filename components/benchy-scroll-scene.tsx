@@ -62,66 +62,176 @@ function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> })
   return (
     <group ref={groupRef}>
       <mesh geometry={geometry} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#2563eb" roughness={0.4} metalness={0.1} clearcoat={0.4} />
+        <meshPhysicalMaterial color="#16a34a" roughness={0.4} metalness={0.1} clearcoat={0.4} />
       </mesh>
     </group>
   );
 }
 
-/** A stylized (not any specific branded machine) enclosed-printer gantry —
- * corner posts, an X-axis rail carrying a print head that rises with the
- * model's build progress. Purely decorative, no interaction with the mesh. */
+/** A small cooling fan for the print head — a shroud box with a blade disk
+ * that actually spins, rather than a static decal, so it reads as a fan
+ * rather than another flat panel. */
+function PrintHeadFan({ position }: { position: [number, number, number] }) {
+  const bladeRef = useRef<THREE.Mesh>(null);
+  useFrame((_, delta) => {
+    if (bladeRef.current) bladeRef.current.rotation.z += delta * 18;
+  });
+  return (
+    <group position={position}>
+      <mesh castShadow>
+        <boxGeometry args={[0.1, 0.1, 0.025]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.4} metalness={0.5} transparent />
+      </mesh>
+      <mesh ref={bladeRef} position={[0, 0, 0.018]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.038, 0.038, 0.008, 8]} />
+        <meshStandardMaterial color="#475569" roughness={0.4} metalness={0.6} transparent />
+      </mesh>
+    </group>
+  );
+}
+
+/** A stylized (not any specific branded machine) enclosed-printer gantry.
+ * The frame is a proper closed rectangle — 4 uprights joined by a full top
+ * ring, not a single crossbar floating disconnected between them (the
+ * previous version's rail sat at z=0 while the posts were at z=±BED, so it
+ * never actually touched any of them). The print head rides two inset
+ * Z-guide rods as one physically joined assembly — rail, carriage, and
+ * head all move together and stay flush against each other — instead of a
+ * lone cube drifting through empty space below a fixed rail. Purely
+ * decorative, no interaction with the mesh. */
 function PrinterRig({ progressRef }: { progressRef: React.RefObject<number> }) {
-  const headRef = useRef<THREE.Group>(null);
+  const gantryRef = useRef<THREE.Group>(null);
+  const headSweepRef = useRef<THREE.Group>(null);
   const BED = 1.7;
-  const RIG_HEIGHT = 2.1;
+  const FRAME_TOP = 1.2;
+  const FRAME_BOTTOM = -0.9;
+  const RAIL_THICKNESS = 0.07;
+  const Z_ROD_X = BED * 0.6;
+  const GANTRY_MIN_Y = -0.58;
+  const GANTRY_MAX_Y = 1.0;
+  const postHeight = FRAME_TOP - FRAME_BOTTOM;
 
   useFrame(({ clock }) => {
     const p = progressRef.current;
     const buildP = THREE.MathUtils.clamp(p / BUILD_END, 0, 1);
     const hopP = THREE.MathUtils.clamp((p - BUILD_END) / (1 - BUILD_END), 0, 1);
-    if (headRef.current) {
-      headRef.current.position.y = -0.9 + buildP * 1.6;
-      headRef.current.position.x = Math.sin(clock.elapsedTime * 3) * BED * 0.4;
-      const mat = headRef.current.children[0] as THREE.Mesh;
-      const material = mat?.material as THREE.MeshStandardMaterial | undefined;
-      if (material) material.opacity = 1 - hopP;
+
+    if (gantryRef.current) {
+      gantryRef.current.position.y = GANTRY_MIN_Y + buildP * (GANTRY_MAX_Y - GANTRY_MIN_Y);
+      gantryRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const material = child.material as THREE.MeshStandardMaterial;
+          if (material) material.opacity = 1 - hopP;
+        }
+      });
+    }
+    if (headSweepRef.current) {
+      headSweepRef.current.position.x = Math.sin(clock.elapsedTime * 3) * Z_ROD_X * 0.68;
     }
   });
 
   const postPositions: [number, number, number][] = [
-    [-BED, RIG_HEIGHT / 2 - 0.9, -BED],
-    [BED, RIG_HEIGHT / 2 - 0.9, -BED],
-    [-BED, RIG_HEIGHT / 2 - 0.9, BED],
-    [BED, RIG_HEIGHT / 2 - 0.9, BED],
+    [-BED, (FRAME_TOP + FRAME_BOTTOM) / 2, -BED],
+    [BED, (FRAME_TOP + FRAME_BOTTOM) / 2, -BED],
+    [-BED, (FRAME_TOP + FRAME_BOTTOM) / 2, BED],
+    [BED, (FRAME_TOP + FRAME_BOTTOM) / 2, BED],
   ];
 
   return (
     <group>
+      {/* corner uprights */}
       {postPositions.map((pos, i) => (
         <mesh key={i} position={pos} castShadow>
-          <boxGeometry args={[0.06, RIG_HEIGHT, 0.06]} />
+          <boxGeometry args={[0.06, postHeight, 0.06]} />
           <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
         </mesh>
       ))}
-      <mesh position={[0, RIG_HEIGHT - 0.9, 0]} castShadow>
-        <boxGeometry args={[BED * 2.1, 0.07, 0.07]} />
+
+      {/* top frame — a full closed rectangle joining all 4 uprights,
+          instead of a single crossbar floating between them */}
+      <mesh position={[0, FRAME_TOP, -BED]} castShadow>
+        <boxGeometry args={[BED * 2 + 0.1, RAIL_THICKNESS, RAIL_THICKNESS]} />
         <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
       </mesh>
-      <group ref={headRef} position={[0, -0.9, 0]}>
+      <mesh position={[0, FRAME_TOP, BED]} castShadow>
+        <boxGeometry args={[BED * 2 + 0.1, RAIL_THICKNESS, RAIL_THICKNESS]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
+      </mesh>
+      <mesh position={[-BED, FRAME_TOP, 0]} castShadow>
+        <boxGeometry args={[RAIL_THICKNESS, RAIL_THICKNESS, BED * 2 + 0.1]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
+      </mesh>
+      <mesh position={[BED, FRAME_TOP, 0]} castShadow>
+        <boxGeometry args={[RAIL_THICKNESS, RAIL_THICKNESS, BED * 2 + 0.1]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
+      </mesh>
+
+      {/* two Z-guide rods, inset from the outer frame and spanning its
+          full height — what the gantry actually rides on */}
+      {[-Z_ROD_X, Z_ROD_X].map((x) => (
+        <mesh key={x} position={[x, (FRAME_TOP + FRAME_BOTTOM) / 2, 0]} castShadow>
+          <boxGeometry args={[0.05, postHeight, 0.05]} />
+          <meshStandardMaterial color="#334155" roughness={0.25} metalness={0.7} />
+        </mesh>
+      ))}
+
+      {/* gantry: rail + print head rise together on the Z rods as the
+          print builds, so the head is always physically flush against the
+          rail instead of floating apart from it at a different height */}
+      <group ref={gantryRef} position={[0, GANTRY_MIN_Y, 0]}>
         <mesh castShadow>
-          <boxGeometry args={[0.22, 0.16, 0.22]} />
-          <meshStandardMaterial color="#334155" roughness={0.25} metalness={0.6} transparent />
+          <boxGeometry args={[Z_ROD_X * 2 + 0.1, RAIL_THICKNESS, RAIL_THICKNESS]} />
+          <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} transparent />
         </mesh>
-        <mesh position={[0, -0.12, 0]}>
-          <coneGeometry args={[0.03, 0.08, 12]} />
-          <meshStandardMaterial
-            color="#f59e0b"
-            emissive="#f59e0b"
-            emissiveIntensity={0.8}
-            roughness={0.3}
-          />
-        </mesh>
+
+        {/* the print head — a real hotend stack (carriage clip, finned
+            heatsink, side cooling fan, heater block, brass nozzle glowing
+            hot at the tip) instead of a single sliding cube */}
+        <group ref={headSweepRef} position={[0, -0.06, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.2, 0.05, 0.16]} />
+            <meshStandardMaterial color="#0f172a" roughness={0.4} metalness={0.6} transparent />
+          </mesh>
+
+          <mesh position={[0, -0.07, 0]} castShadow>
+            <cylinderGeometry args={[0.045, 0.045, 0.09, 12]} />
+            <meshStandardMaterial color="#cbd5e1" roughness={0.35} metalness={0.85} transparent />
+          </mesh>
+          {[-0.04, -0.07, -0.1].map((y) => (
+            <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <torusGeometry args={[0.052, 0.008, 8, 16]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={0.3} metalness={0.9} transparent />
+            </mesh>
+          ))}
+
+          <PrintHeadFan position={[0.09, -0.07, 0]} />
+
+          <mesh position={[0, -0.145, 0]} castShadow>
+            <boxGeometry args={[0.09, 0.06, 0.09]} />
+            <meshStandardMaterial color="#111827" roughness={0.4} metalness={0.5} transparent />
+          </mesh>
+
+          <mesh position={[0, -0.205, 0]}>
+            <coneGeometry args={[0.024, 0.06, 12]} />
+            <meshStandardMaterial
+              color="#b45309"
+              roughness={0.3}
+              metalness={0.7}
+              emissive="#f97316"
+              emissiveIntensity={0.5}
+              transparent
+            />
+          </mesh>
+          <mesh position={[0, -0.238, 0]}>
+            <sphereGeometry args={[0.009, 8, 8]} />
+            <meshStandardMaterial
+              color="#fbbf24"
+              emissive="#fbbf24"
+              emissiveIntensity={1.4}
+              transparent
+            />
+          </mesh>
+        </group>
       </group>
     </group>
   );
@@ -207,7 +317,7 @@ export default function BenchyScrollScene() {
           <Canvas shadows camera={{ position: [0, 1, 3.4], fov: 42 }}>
             <ambientLight intensity={0.6} />
             <directionalLight position={[3, 5, 2]} intensity={1.4} castShadow />
-            <directionalLight position={[-3, 2, -2]} intensity={0.35} color="#a855f7" />
+            <directionalLight position={[-3, 2, -2]} intensity={0.35} color="#4ade80" />
             <Suspense fallback={null}>
               <ScrollBenchy progressRef={progressRef} />
               <PrinterRig progressRef={progressRef} />

@@ -72,6 +72,109 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-30** — Fixed a real geometry bug Mohit spotted: the printer rig's frame
+  looked "broken, not joint[ed]." It was — the crossbar sat at `z=0` while the four
+  corner posts were at `z=±1.7`, so it never touched any of them, just floated in the
+  middle of the frame in empty space. The print head had a matching problem: it started
+  at `y=-0.9` (level with the build plate, actually piercing through it — the nozzle
+  cone extended to `y=-1.02`, below the plate) while the rail stayed fixed at `y=1.2`
+  near the top, so the two were never physically together at any point in the
+  animation. Rebuilt `PrinterRig` in `benchy-scroll-scene.tsx`: the top is now a proper
+  closed rectangle (4 horizontal beams joining all 4 uprights, not one floating
+  crossbar), two inset Z-guide rods run the frame's full height, and the gantry (rail +
+  head, one group) rides those rods as a single physically-joined assembly — the head
+  is always flush against the rail, and the whole thing now starts just above the bed
+  and rises smoothly instead of starting off buried in the plate.
+  **Also replaced the print head itself** — Mohit separately flagged it as "just a cube
+  sliding back and forth." It was, literally: a plain box + a static cone. Rebuilt it as
+  a real hotend stack: a carriage clip, a heatsink cylinder wrapped in three fin rings
+  (torus geometry), a heater block, a brass-colored nozzle cone with an emissive
+  hot-glow tip, and a side-mounted cooling fan whose blade actually spins (its own
+  `useFrame` rotation, `PrintHeadFan`). Kept the existing hop-away fade (whole gantry
+  assembly's opacity ties to `hopP` via `group.traverse`, applied consistently to
+  everything now that it's one connected group, rather than only the old head box).
+  Verified live via claude-in-chrome against a local dev server (not just clean build):
+  zoomed into the frame corners and confirmed the top rail now visibly meets the
+  uprights, and zoomed into the print head mid-build to confirm it reads as a real
+  hotend (heatsink, fan, nozzle) sitting flush under the rail rather than a floating
+  cube. `pnpm typecheck`/`lint`/`format:check`/`build` all pass. **Still not pushed or
+  deployed** — this is stacked on top of yesterday's not-yet-shipped green/water/cursor
+  changes; all of it is waiting on Mohit's go-ahead before it goes to
+  `makrd.vercel.app`.
+
+- **2026-07-29 (late afternoon)** — Reverted straight back to green after the vibrant
+  push earlier today — Mohit didn't like it on the landing page specifically, wanted
+  "realistic colours," a more convincing water finale, and the cursor flourish visible
+  from the top of the page instead of only near the bottom.
+  **Green, but landing-page-only this time.** Rather than flipping the global
+  `--accent-*`/`--blob-*` CSS vars back (which would've dragged the nav, dashboard, and
+  every interior page along with it), added `:root.theme-landing-green` in
+  `globals.css` plus a tiny client component (`components/landing-theme.tsx`) that
+  toggles the class on `<html>` for as long as the landing page is mounted. Nav renders
+  in the root layout outside the page's own markup, so scoping to `<html>` rather than
+  a wrapper div was needed for the nav's sign-in button/logo to pick up green too while
+  still leaving `/login` and every authenticated page on the vibrant palette (verified
+  both live side by side). Picked deep forest → fresh-leaf green (`#14532d` →
+  `#16a34a` → `#4ade80`, gold `#ca8a04` for warm accent) instead of the old neon
+  black-and-green, plus matching hull/rim-light colors on the landing hero's Benchy
+  (`benchy-scroll-scene.tsx` only — the mascot's `skipper-3d.tsx` elsewhere in the app
+  stays on its own colors, it's not landing-page-scoped). Water intentionally stays on
+  its own independent `--water-*` blue vars throughout — real water shouldn't turn
+  green just because the brand accent did.
+  **Made the water finale actually look like water.** The old version was a flat SVG
+  sine wave — smooth, repeating, obviously not real. `components/water-flow.tsx` now
+  runs the wave paths through an SVG `feTurbulence`/`feDisplacementMap` filter so the
+  edges are irregular instead of a perfect curve, added a third parallax drift layer at
+  a different speed, and layered a caustics overlay (blended radial-gradient light
+  patches, `mix-blend-mode: screen`) plus a slow diagonal sheen on top — the two classic
+  CSS tricks for making a flat gradient read as light moving on a real surface. New
+  `water-drift-3`/`water-caustics`/`water-sheen` keyframes in `globals.css`, all folded
+  into the existing `prefers-reduced-motion` kill-switch alongside the older wave/boat
+  animations.
+  **Cursor flourish now runs the whole landing page, not just the last stretch.**
+  Previous version hid the native OS cursor from load and only swapped in a custom ring
+  once scroll passed a marker near the bottom — a deliberate fix for an earlier bug
+  where the page briefly became unclickable if the custom cursor failed to render.
+  Kept that safety property but changed the trade-off: `components/custom-cursor.tsx`
+  no longer hides the native cursor at all, ever — it only draws a translucent
+  glass-style ring (border + backdrop-blur + accent-tinted glow, matching the site's
+  existing `.glass` look) on top of wherever the real cursor already is, active from
+  the first mouse move anywhere on `/`. Dropped the GSAP ScrollTrigger marker logic
+  entirely (no longer needed) in favor of a plain `usePathname() === "/"` check, so it's
+  simultaneously simpler and impossible to reintroduce the old unclickable-page failure
+  mode, since the native pointer is never touched. Removed the now-orphaned
+  `#cursor-activate-marker` div from `app/page.tsx` and the `body.custom-cursor-active
+  { cursor: none }` rule it drove.
+  Verified live via claude-in-chrome against a local dev server (not just clean
+  build/lint): green theme confirmed on `/`, vibrant theme confirmed still intact on
+  `/login`, water's turbulence-distorted edges and caustic light patches visibly
+  rendering after scrolling to the finale. Cursor ring's actual computed styles
+  (position tracks the pointer, opacity reaches 1, correct glass styling) were
+  confirmed correct via direct DOM inspection, but weren't visible in the screenshot —
+  traced this to the automated browser profile itself having
+  `prefers-reduced-motion: reduce` set at the OS level, which the app's own
+  accessibility rule (present before this session, left untouched) correctly hides all
+  cursor-following motion for — not a bug, just this particular browser's a11y setting;
+  should render normally for Mohit's own browser. `pnpm typecheck`/`lint`/
+  `format:check`/`build` all pass (23 routes). **Not yet pushed or redeployed** — held
+  here pending Mohit's okay on the green tone/water look before shipping to
+  `makrd.vercel.app`.
+
+- **2026-07-29 (afternoon)** — Finally got real browser access and clicked through the
+  live site — closing out the "unverified in browser" caveat that had been sitting on
+  the last several log entries. Loaded `https://makrd.vercel.app` via
+  claude-in-chrome and scrolled the full pinned hero sequence end to end.
+  **The pin-overlap bug is actually fixed**: the printer rig, Benchy build-up, and
+  hop-into-water finale all release cleanly into "Meet the network" and the sign-in CTA
+  section with no overlap — sign-in button stayed clickable throughout. Printer rig
+  (corner posts, rail, print head with orange nozzle) renders and animates with build
+  progress as expected. Water finale is genuinely blue/foam, not the old green. Vibrant
+  blue→violet→pink palette confirmed live everywhere, no leftover green hex anywhere in
+  the scroll-through. No console errors on load or after interaction; Skipper's FAQ
+  panel opens cleanly. Did not test the actual Google OAuth round trip or interior
+  authenticated pages this pass — landing page was the specific thing flagged as
+  unverified, so that's what got checked.
+
 - **2026-07-29 (mid-morning)** — Fixed a real hero-pinning bug, added a printer rig +
   hop-into-water finale, dropped the green theme for something vibrant.
   **Fixed content overlapping the sign-in CTA on scroll.** The pinned hero

@@ -61,6 +61,38 @@
   }
 }
 
+/* Landing-page-only accent override — real, natural greens (forest ->
+   fresh-leaf, warmed by a gold rather than a neon lime) instead of the
+   vibrant blue/violet/pink used everywhere else in the app. Toggled by
+   components/landing-theme.tsx adding/removing this class on <html> only
+   while the landing page ("/") is mounted, so the rest of the app (nav on
+   every other route, dashboard, etc.) keeps the vibrant palette. Water
+   stays on its own --water-* vars regardless, so it always reads as real
+   water rather than picking up whatever the brand accent is. */
+:root.theme-landing-green {
+  --accent-from: #14532d;
+  --accent-via: #16a34a;
+  --accent-to: #4ade80;
+  --accent-warm: #ca8a04;
+
+  --blob-1: #22c55e;
+  --blob-2: #15803d;
+  --blob-3: #4ade80;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.theme-landing-green {
+    --accent-from: #166534;
+    --accent-via: #22c55e;
+    --accent-to: #86efac;
+    --accent-warm: #eab308;
+
+    --blob-1: #22c55e;
+    --blob-2: #16a34a;
+    --blob-3: #86efac;
+  }
+}
+
 * {
   border-color: var(--glass-border);
 }
@@ -439,12 +471,50 @@ select option {
   }
 }
 
+@keyframes water-drift-3 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-320px);
+  }
+}
+
+@keyframes water-caustics {
+  0% {
+    background-position:
+      0% 0%,
+      0% 0%;
+  }
+  100% {
+    background-position:
+      220px 140px,
+      -180px 220px;
+  }
+}
+
+@keyframes water-sheen {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translateX(-8%);
+  }
+  50% {
+    opacity: 0.3;
+    transform: translateX(8%);
+  }
+}
+
 .water-wave-1 {
   animation: water-drift-1 9s linear infinite;
 }
 
 .water-wave-2 {
   animation: water-drift-2 6s linear infinite;
+}
+
+.water-wave-3 {
+  animation: water-drift-3 15s linear infinite;
 }
 
 .water-boat-drift {
@@ -455,25 +525,32 @@ select option {
   animation: water-boat-bob 2.4s ease-in-out infinite;
 }
 
+.water-caustics {
+  animation: water-caustics 8s ease-in-out infinite alternate;
+}
+
+.water-sheen {
+  animation: water-sheen 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .water-wave-1,
   .water-wave-2,
+  .water-wave-3,
   .water-boat-drift,
-  .water-boat-bob {
+  .water-boat-bob,
+  .water-caustics,
+  .water-sheen {
     animation: none;
   }
 }
 
 /* ---------------------------------------------------------------------
-   Custom cursor: only active once #cursor-activate-marker has been
-   scrolled to (see components/custom-cursor.tsx) — the native OS cursor
-   is untouched everywhere else on the page, so nothing here can ever
-   make the page unclickable.
+   Custom cursor: a glass ring that follows the pointer on the landing
+   page (see components/custom-cursor.tsx). The native OS cursor is never
+   hidden — this only ever draws on top of it — so unlike an earlier
+   version, nothing here can make the page unclickable if it fails.
    --------------------------------------------------------------------- */
-body.custom-cursor-active {
-  cursor: none;
-}
-
 .cursor-dot,
 .cursor-glow {
   position: fixed;
@@ -493,11 +570,17 @@ body.custom-cursor-active {
 }
 
 .cursor-glow {
-  width: 44px;
-  height: 44px;
-  background: radial-gradient(circle, var(--accent-to) 0%, transparent 70%);
-  filter: blur(4px);
-  opacity: 0;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-to) 30%, transparent) 0%,
+    transparent 75%
+  );
+  backdrop-filter: blur(3px) saturate(180%);
+  -webkit-backdrop-filter: blur(3px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
