@@ -72,6 +72,52 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-28 (evening)** — Data reset + no-more-free-prints rule, community chat,
+  nav/mascot/theme fixes, from another rapid-fire feedback batch.
+  **Reset all job and points history.** Cleared `jobs` and `points_ledger` entirely and
+  put every profile back to a clean 25-point signup-bonus baseline (fresh ledger entry
+  each) — a clean slate for testing. Two small orphaned STL test files remain in the
+  `job-files` Storage bucket from before the reset; Supabase blocks direct SQL deletion
+  of storage objects (must go through the Storage API, which needs a live user session
+  I didn't have) — harmless, just two small leftover files.
+  **Removed the first-print-free promo.** It directly contradicted the new rule
+  ("anything above 0g needs to have a certain amount of points as reward") — every job
+  now costs at least 1 point unconditionally, weight must stay strictly positive to
+  submit at all. Migration `20260728030000_remove_free_print_promo.sql`.
+  **Investigated "all jobs not visible."** Reviewed the `/jobs` query, dashboard
+  queries, and the jobs RLS SELECT policy — found no code-level bug; the policy and
+  queries look correct (`status = 'submitted' OR requester_id = uid() OR provider_id =
+  uid()`). Best explanation: jobs that auto-match to a free provider leave the open
+  marketplace instantly (by design, they're no longer open), which can read as "gone."
+  Given the data reset, flagged this as worth re-confirming with fresh data rather than
+  guessing further at a fix that might not exist.
+  **Added a community chat.** New `community_messages` table + RLS (any signed-in maKr
+  can read; can only insert as themselves) wired into a live panel on `/community` via
+  Supabase Realtime. Deliberately a single public town-square channel, not 1:1 DMs —
+  DMs need their own privacy-reviewed design (flagged earlier this session as
+  out-of-scope-for-now); this keeps the RLS trivial and low-risk.
+  **Fixed the nav overlaying content on scroll.** The floating pill nav now hides on
+  scroll-down and reappears on scroll-up/near-top (`components/scroll-hide.tsx`)
+  instead of permanently sitting on top of page content while scrolling.
+  **Upgraded the persistent mascot to the real 3D model.** The corner button's expanded
+  panel now reuses the 3D Skipper model already built for the loading screen
+  (`components/skipper-3d-inline.tsx`, dynamic-imported client-only) instead of the
+  flat SVG face — the collapsed button itself stays on the cheap SVG so a WebGL canvas
+  isn't mounted on every single page load, only when the panel is actually opened.
+  **Recolored the site to black and green.** Changed the CSS custom properties that
+  drive glass/gradient/accent styling (`app/globals.css`) for both light and dark mode,
+  plus the 3D mascot's hull/lighting colors and the Razorpay checkout theme color.
+  Nearly every component already referenced these vars instead of hardcoded Tailwind
+  colors, so this was a small, centralized change rather than a per-component rewrite.
+  Couldn't fetch the reference site Mohit linked (creativeglu.ai) — it returned a 403 —
+  so this is my own design judgment on "black and green," not a direct match to that
+  site; worth a look together if the direction isn't right.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  `get_advisors` clean (same pre-existing expected warnings only); dev-server smoke test
+  (public routes 200, protected routes correctly redirecting, no server errors). Pushed
+  to `main` and `mohit`, redeployed via the manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow, verified live on `https://makrd.vercel.app`.
+
 - **2026-07-28 (later)** — Follow-up batch: disabled Razorpay, fixed the real cause of
   STL uploads still failing, added weight rendering + a provider commission.
   **Found the actual STL upload bug.** The earlier same-day fix (raising Next's
