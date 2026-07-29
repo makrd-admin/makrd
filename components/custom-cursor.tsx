@@ -2,13 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /**
- * A trailing custom cursor — a small dot that tracks the pointer exactly,
- * and a larger ring that eases toward it (gsap.quickTo, so it lags
- * slightly and gives the drag/momentum feel used across most WebGL
- * agency sites). Grows over interactive elements. Disabled on touch
- * devices, where there's no real pointer to track.
+ * No custom cursor for most of the page — the native OS pointer is always
+ * what's driving clicks. Once the user scrolls down to the
+ * #cursor-activate-marker element (placed just before the final sign-in
+ * section on the landing page), a soft glowing ring takes over from the
+ * native cursor as a closing flourish. Scrolling back up restores the
+ * native cursor.
+ *
+ * Position tracking runs the whole time (cheap), but the glow is only
+ * ever shown once the marker has actually been reached — so even if
+ * something here breaks, the native cursor was never hidden and nothing
+ * becomes unclickable. Disabled entirely on touch devices.
  */
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
@@ -23,8 +32,8 @@ export default function CustomCursor() {
 
     const moveDot = gsap.quickTo(dot, "x", { duration: 0.05, ease: "power3.out" });
     const moveDotY = gsap.quickTo(dot, "y", { duration: 0.05, ease: "power3.out" });
-    const moveRing = gsap.quickTo(ring, "x", { duration: 0.45, ease: "power3.out" });
-    const moveRingY = gsap.quickTo(ring, "y", { duration: 0.45, ease: "power3.out" });
+    const moveRing = gsap.quickTo(ring, "x", { duration: 0.5, ease: "power3.out" });
+    const moveRingY = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3.out" });
 
     function onMove(e: MouseEvent) {
       moveDot(e.clientX);
@@ -33,26 +42,36 @@ export default function CustomCursor() {
       moveRingY(e.clientY);
     }
 
-    function onOver(e: MouseEvent) {
-      const target = (e.target as HTMLElement)?.closest("a, button, input, textarea, select");
-      gsap.to(ring, { scale: target ? 1.8 : 1, duration: 0.25, ease: "power2.out" });
-    }
-
     document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseover", onOver);
-    document.body.classList.add("custom-cursor-active");
+
+    const marker = document.getElementById("cursor-activate-marker");
+    let trigger: ScrollTrigger | undefined;
+    if (marker) {
+      trigger = ScrollTrigger.create({
+        trigger: marker,
+        start: "top 90%",
+        onEnter: () => {
+          document.body.classList.add("custom-cursor-active");
+          gsap.to([dot, ring], { opacity: 1, duration: 0.4 });
+        },
+        onLeaveBack: () => {
+          document.body.classList.remove("custom-cursor-active");
+          gsap.to([dot, ring], { opacity: 0, duration: 0.3 });
+        },
+      });
+    }
 
     return () => {
       document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseover", onOver);
       document.body.classList.remove("custom-cursor-active");
+      trigger?.kill();
     };
   }, []);
 
   return (
     <>
       <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
+      <div ref={ringRef} className="cursor-glow" aria-hidden="true" />
     </>
   );
 }

@@ -22,7 +22,7 @@ export default async function Nav() {
 
   return (
     <ScrollHide>
-      <header className="glass-strong flex w-full max-w-5xl items-center gap-3 rounded-2xl px-5 py-2.5">
+      <header className="glass-nav flex w-full max-w-5xl items-center gap-3 rounded-2xl px-5 py-2.5">
         <Link href="/dashboard" className="flex shrink-0 items-center gap-1.5">
           <LogoMark size={20} />
           <span className="text-gradient text-base font-semibold">maKrd</span>

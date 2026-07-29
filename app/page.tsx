@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import CinematicHero from "@/components/cinematic-hero";
+import BenchyScrollScene from "@/components/benchy-scroll-scene";
 import Reveal from "@/components/reveal";
 import WaterFlow from "@/components/water-flow";
 import { PRINTER_MODELS } from "@/lib/printer-models";
@@ -40,14 +40,12 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
-        <CinematicHero />
-      </section>
+      <BenchyScrollScene />
 
       <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
         <Reveal>
           <h2 className="mb-8 text-sm font-semibold tracking-wide text-neutral-400 uppercase dark:text-neutral-500">
-            How it works
+            The short version
           </h2>
         </Reveal>
         <div className="grid gap-6 sm:grid-cols-3">
@@ -107,6 +105,7 @@ export default async function Home() {
         </ul>
       </section>
 
+      <div id="cursor-activate-marker" />
       <WaterFlow>
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 text-center">
           <h2 className="text-2xl font-semibold text-white sm:text-3xl">

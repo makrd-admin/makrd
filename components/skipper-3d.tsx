@@ -1,9 +1,18 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { Suspense, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import { useBenchyGeometry } from "./benchy-model";
+
+const GROW_SECONDS = 3.2;
+const HOLD_SECONDS = 1.4;
+const CYCLE_SECONDS = GROW_SECONDS + HOLD_SECONDS;
+
+function easeOutCubic(t: number) {
+  return 1 - Math.pow(1 - t, 3);
+}
 
 // Fresnel rim-light: a thin glowing shell around the hull, brightest at
 // grazing angles (where the surface normal points away from the camera).
@@ -32,27 +41,16 @@ const FRESNEL_FRAGMENT = `
   }
 `;
 
-function FresnelGlow({
-  geometry,
-  color = "#4ade80",
-}: {
-  geometry: THREE.BufferGeometry;
-  color?: string;
-}) {
-  const uniforms = useMemo(
-    () => ({
-      glowColor: { value: new THREE.Color(color) },
-      power: { value: 2.2 },
-    }),
-    [color],
-  );
-
+function FresnelGlow({ geometry }: { geometry: THREE.BufferGeometry }) {
   return (
-    <mesh geometry={geometry} scale={1.045}>
+    <mesh geometry={geometry} scale={1.03}>
       <shaderMaterial
         vertexShader={FRESNEL_VERTEX}
         fragmentShader={FRESNEL_FRAGMENT}
-        uniforms={uniforms}
+        uniforms={{
+          glowColor: { value: new THREE.Color("#4ade80") },
+          power: { value: 2.2 },
+        }}
         transparent
         depthWrite={false}
         blending={THREE.AdditiveBlending}
@@ -62,50 +60,9 @@ function FresnelGlow({
   );
 }
 
-const GROW_SECONDS = 3.2;
-const HOLD_SECONDS = 1.4;
-const CYCLE_SECONDS = GROW_SECONDS + HOLD_SECONDS;
-
-function easeOutCubic(t: number) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
-function useHullShape() {
-  return useMemo(() => {
-    const shape = new THREE.Shape();
-    shape.moveTo(-1.0, 0);
-    shape.quadraticCurveTo(-1.08, 0, -1.08, 0.12);
-    shape.lineTo(-1.08, 0.3);
-    shape.quadraticCurveTo(-1.08, 0.4, -0.92, 0.42);
-    shape.lineTo(-0.4, 0.44);
-    shape.lineTo(-0.4, 0.62);
-    shape.lineTo(0.4, 0.62);
-    shape.lineTo(0.4, 0.44);
-    shape.lineTo(0.92, 0.42);
-    shape.quadraticCurveTo(1.08, 0.4, 1.1, 0.3);
-    shape.lineTo(1.1, 0.12);
-    shape.quadraticCurveTo(1.1, 0, 1.0, 0);
-    shape.lineTo(-1.0, 0);
-    return shape;
-  }, []);
-}
-
 function Hull() {
-  const shape = useHullShape();
   const groupRef = useRef<THREE.Group>(null);
-
-  const geometry = useMemo(() => {
-    const geo = new THREE.ExtrudeGeometry(shape, {
-      depth: 0.55,
-      bevelEnabled: true,
-      bevelThickness: 0.03,
-      bevelSize: 0.03,
-      bevelSegments: 3,
-      curveSegments: 24,
-    });
-    geo.translate(0, -0.3, -0.275);
-    return geo;
-  }, [shape]);
+  const geometry = useBenchyGeometry();
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
@@ -115,46 +72,18 @@ function Hull() {
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.05, 0]}>
+    <group ref={groupRef} position={[0, -0.35, 0]}>
       <mesh geometry={geometry} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#16a34a" roughness={0.35} metalness={0.15} clearcoat={0.5} />
+        <meshPhysicalMaterial color="#16a34a" roughness={0.4} metalness={0.1} clearcoat={0.4} />
       </mesh>
       <FresnelGlow geometry={geometry} />
-
-      {/* funnel */}
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <cylinderGeometry args={[0.06, 0.07, 0.22, 16]} />
-        <meshPhysicalMaterial color="#bef264" roughness={0.3} metalness={0.2} clearcoat={0.5} />
-      </mesh>
-
-      {/* face, on the cabin front */}
-      <mesh position={[-0.15, 0.34, 0.29]}>
-        <sphereGeometry args={[0.07, 24, 24]} />
-        <meshStandardMaterial color="white" roughness={0.15} />
-      </mesh>
-      <mesh position={[0.15, 0.34, 0.29]}>
-        <sphereGeometry args={[0.07, 24, 24]} />
-        <meshStandardMaterial color="white" roughness={0.15} />
-      </mesh>
-      <mesh position={[-0.13, 0.34, 0.35]}>
-        <sphereGeometry args={[0.032, 16, 16]} />
-        <meshStandardMaterial color="#171717" roughness={0.4} />
-      </mesh>
-      <mesh position={[0.17, 0.34, 0.35]}>
-        <sphereGeometry args={[0.032, 16, 16]} />
-        <meshStandardMaterial color="#171717" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 0.18, 0.32]} rotation={[0, 0, Math.PI]}>
-        <torusGeometry args={[0.11, 0.014, 8, 24, Math.PI]} />
-        <meshStandardMaterial color="#171717" roughness={0.4} />
-      </mesh>
     </group>
   );
 }
 
 function BuildPlate() {
   return (
-    <mesh position={[0, -0.35, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+    <mesh position={[0, -0.9, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <circleGeometry args={[1.9, 48]} />
       <meshStandardMaterial color="#111827" roughness={0.6} metalness={0.4} />
     </mesh>
@@ -162,10 +91,11 @@ function BuildPlate() {
 }
 
 /**
- * Skipper, rendered as an actual 3D model (procedural geometry — no external
- * asset file) with PBR materials and real lighting, instead of the flat SVG
- * approximation used elsewhere. Client-only: WebGL doesn't exist server-side,
- * so this must always be loaded via next/dynamic with ssr:false.
+ * Skipper, rendered as the real Benchy 3D model (public/models/benchy.stl,
+ * decimated from a real scan — see components/benchy-model.tsx) with PBR
+ * materials, a fresnel rim glow, and real lighting. Client-only: WebGL
+ * doesn't exist server-side, so this must always be loaded via next/dynamic
+ * with ssr:false.
  */
 export default function Skipper3D({ size = 320 }: { size?: number }) {
   return (
@@ -175,7 +105,9 @@ export default function Skipper3D({ size = 320 }: { size?: number }) {
         <directionalLight position={[3, 5, 2]} intensity={1.4} castShadow />
         <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#22c55e" />
         <pointLight position={[0, 1.5, 2]} intensity={0.3} color="#bef264" />
-        <Hull />
+        <Suspense fallback={null}>
+          <Hull />
+        </Suspense>
         <BuildPlate />
         <OrbitControls
           autoRotate
