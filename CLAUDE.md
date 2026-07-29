@@ -72,6 +72,46 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-29 (mid-morning)** — Fixed a real hero-pinning bug, added a printer rig +
+  hop-into-water finale, dropped the green theme for something vibrant.
+  **Fixed content overlapping the sign-in CTA on scroll.** The pinned hero
+  (`ScrollTrigger` `pin: true`) inserts and measures its own spacer element in the DOM
+  to reserve scroll space — under some layout-timing condition that measurement went
+  stale, so the pinned scene didn't release cleanly and sat on top of the "your next
+  print is one step away" sign-in section below it, exactly as Mohit reported live.
+  Replaced the GSAP pin with a plain CSS `position: sticky` inner layer inside a tall
+  (400vh) wrapper — no separate spacer-measurement step exists in that approach, so it
+  can't hit this failure mode. Also added a defensive `ScrollTrigger.refresh()` on
+  window load as a second safety net for the same class of bug anywhere else on the
+  page. Could not reproduce/confirm the fix live (still no browser access), so this is
+  reasoned from how GSAP's pin-spacer mechanism works, not visually verified.
+  **Added a printer rig around the build animation.** Corner posts, an X-axis rail, and
+  a print head that rises with build progress and sweeps side to side — not modeled on
+  any specific branded printer, a generic enclosed-gantry look, so the Benchy now reads
+  as being actively printed rather than floating in space.
+  **Extended the scroll story with a hop-into-water finale.** The last ~20% of the
+  scroll region plays the Benchy arcing up off the plate and dropping out of frame
+  (falls behind the opaque plate, which naturally occludes it — no transparency tricks
+  needed) while a blue water-color overlay and a foam-line SVG fade in via a
+  `--hop-progress` CSS custom property set directly in the scroll handler (kept off
+  React state so it doesn't add re-renders). `WaterFlow` further down the page — the
+  section between the hero and the actual sign-in button — now uses new `--water-*` CSS
+  vars (real blue/foam tones) instead of the site's accent gradient, so it reads as
+  actual water regardless of brand palette.
+  **Dropped black-and-green for a vibrant palette**, per explicit instruction ("no need
+  to follow the green colour scheme anymore"): accent gradient is now electric
+  blue → violet → pink across light and dark mode. Swapped every hardcoded green hex
+  left in the 3D scenes too (hull material, fresnel glow, point/directional lights, the
+  Razorpay checkout theme color) — grepped the whole codebase afterward to confirm no
+  green hex codes were left behind.
+  Verified: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build` all pass;
+  dev-server smoke test (landing page renders, sticky 400vh wrapper present in the HTML,
+  no server errors). Pushed to `main` and `mohit`, redeployed via the manual
+  `vercel build --prod` + `vercel deploy --prebuilt --prod` workflow, verified live on
+  `https://makrd.vercel.app`. **Still true: none of this has been seen in a real
+  browser** — the scroll timing, rig visibility, hop animation, and whether the overlap
+  bug is actually gone all need a real click-through to confirm.
+
 - **2026-07-29 (early)** — Real 3DBenchy model, a fixed cursor bug that broke clicking,
   and a properly-glass nav — a fast follow-up to the previous entry's visual push.
   **Swapped the procedural hull for the actual Benchy.** Mohit provided a real
