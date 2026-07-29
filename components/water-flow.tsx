@@ -4,8 +4,10 @@ import type { ReactNode } from "react";
  * A stylized (not physically simulated) flowing-water transition: layered
  * wave paths drift horizontally in a loop while the Benchy hull bobs on
  * the surface, carrying the page down into whatever sits inside `children`
- * (the sign-in CTA). Pure CSS/SVG — no shader/physics engine, consistent
- * with every other animation in this app.
+ * (the sign-in CTA). Uses --water-* CSS vars (real blue tones) rather than
+ * the site's accent gradient, so this always reads as actual water
+ * regardless of the brand palette. Pure CSS/SVG — no shader/physics
+ * engine, consistent with every other animation in this app.
  */
 export default function WaterFlow({ children }: { children: ReactNode }) {
   return (
@@ -13,13 +15,13 @@ export default function WaterFlow({ children }: { children: ReactNode }) {
       <svg
         viewBox="0 0 800 40"
         preserveAspectRatio="none"
-        className="block h-10 w-full text-[var(--accent-via)]"
+        className="block h-10 w-full"
         aria-hidden="true"
       >
         <path
           d="M0 40 L0 20 Q100 0 200 20 T400 20 T600 20 T800 20 L800 40 Z"
-          fill="currentColor"
-          opacity="0.15"
+          fill="var(--water-foam)"
+          opacity="0.9"
         />
       </svg>
 
@@ -27,22 +29,29 @@ export default function WaterFlow({ children }: { children: ReactNode }) {
         className="relative"
         style={{
           background:
-            "linear-gradient(180deg, color-mix(in srgb, var(--accent-via) 15%, transparent), color-mix(in srgb, var(--accent-from) 35%, transparent))",
+            "linear-gradient(180deg, var(--water-light), var(--water-mid) 45%, var(--water-deep))",
         }}
       >
         <svg viewBox="0 0 800 90" preserveAspectRatio="none" className="block h-24 w-full">
           <g className="water-wave-1">
             <path
+              d="M-200 30 Q-100 8 0 30 T200 30 T400 30 T600 30 T800 30 T1000 30 V38 Q-100 20 -200 38 Z"
+              fill="var(--water-foam)"
+              opacity="0.7"
+            />
+          </g>
+          <g className="water-wave-1">
+            <path
               d="M-200 45 Q-100 20 0 45 T200 45 T400 45 T600 45 T800 45 T1000 45 V90 H-200 Z"
-              fill="var(--accent-via)"
-              opacity="0.35"
+              fill="var(--water-mid)"
+              opacity="0.7"
             />
           </g>
           <g className="water-wave-2">
             <path
               d="M-200 55 Q-100 35 0 55 T200 55 T400 55 T600 55 T800 55 T1000 55 V90 H-200 Z"
-              fill="var(--accent-from)"
-              opacity="0.55"
+              fill="var(--water-deep)"
+              opacity="0.8"
             />
           </g>
         </svg>
@@ -53,7 +62,7 @@ export default function WaterFlow({ children }: { children: ReactNode }) {
             width="60"
             height="34"
             viewBox="0 0 240 176"
-            className="water-boat-bob text-white/90 drop-shadow-lg"
+            className="water-boat-bob text-white drop-shadow-lg"
           >
             <path
               d="M40 160 Q30 160 30 150 L30 130 Q30 120 45 118 L90 115 L90 90 L150 90 L150 115 L195 118 Q205 122 208 132 L210 150 Q210 160 200 160 Z"

@@ -48,7 +48,7 @@ function FresnelGlow({ geometry }: { geometry: THREE.BufferGeometry }) {
         vertexShader={FRESNEL_VERTEX}
         fragmentShader={FRESNEL_FRAGMENT}
         uniforms={{
-          glowColor: { value: new THREE.Color("#4ade80") },
+          glowColor: { value: new THREE.Color("#a855f7") },
           power: { value: 2.2 },
         }}
         transparent
@@ -74,7 +74,7 @@ function Hull() {
   return (
     <group ref={groupRef} position={[0, -0.35, 0]}>
       <mesh geometry={geometry} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#16a34a" roughness={0.4} metalness={0.1} clearcoat={0.4} />
+        <meshPhysicalMaterial color="#2563eb" roughness={0.4} metalness={0.1} clearcoat={0.4} />
       </mesh>
       <FresnelGlow geometry={geometry} />
     </group>
@@ -103,8 +103,8 @@ export default function Skipper3D({ size = 320 }: { size?: number }) {
       <Canvas shadows camera={{ position: [2.4, 1.6, 2.8], fov: 38 }}>
         <ambientLight intensity={0.55} />
         <directionalLight position={[3, 5, 2]} intensity={1.4} castShadow />
-        <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#22c55e" />
-        <pointLight position={[0, 1.5, 2]} intensity={0.3} color="#bef264" />
+        <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#a855f7" />
+        <pointLight position={[0, 1.5, 2]} intensity={0.3} color="#ec4899" />
         <Suspense fallback={null}>
           <Hull />
         </Suspense>

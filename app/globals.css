@@ -1,24 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5faf6;
-  --foreground: #0a0f0b;
+  --background: #f7f8fc;
+  --foreground: #14141c;
 
   /* Liquid-glass surfaces */
   --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-bg-strong: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(10, 15, 11, 0.08);
-  --glass-shadow: rgba(10, 15, 11, 0.08);
+  --glass-border: rgba(20, 20, 28, 0.08);
+  --glass-shadow: rgba(20, 20, 28, 0.08);
 
-  /* Brand accents — black & green */
-  --accent-from: #0f2f1d;
-  --accent-via: #16a34a;
-  --accent-to: #4ade80;
-  --accent-warm: #a3e635;
+  /* Brand accents — vibrant electric blue -> violet -> pink */
+  --accent-from: #2563eb;
+  --accent-via: #9333ea;
+  --accent-to: #ec4899;
+  --accent-warm: #f59e0b;
 
-  --blob-1: #16a34a;
-  --blob-2: #052e16;
-  --blob-3: #4ade80;
+  --blob-1: #3b82f6;
+  --blob-2: #a855f7;
+  --blob-3: #f472b6;
+
+  /* Realistic water — used by the river/foam finale, independent of the
+     accent gradient above so it always reads as actual blue water. */
+  --water-deep: #0369a1;
+  --water-mid: #0ea5e9;
+  --water-light: #7dd3fc;
+  --water-foam: #f0f9ff;
 }
 
 @theme inline {
@@ -30,22 +37,27 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #050705;
-    --foreground: #eafbf0;
+    --background: #08080f;
+    --foreground: #f2f2f7;
 
     --glass-bg: rgba(255, 255, 255, 0.06);
     --glass-bg-strong: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(74, 222, 128, 0.14);
+    --glass-border: rgba(255, 255, 255, 0.12);
     --glass-shadow: rgba(0, 0, 0, 0.6);
 
-    --accent-from: #052e16;
-    --accent-via: #22c55e;
-    --accent-to: #86efac;
-    --accent-warm: #bef264;
+    --accent-from: #3b82f6;
+    --accent-via: #a855f7;
+    --accent-to: #f472b6;
+    --accent-warm: #fbbf24;
 
-    --blob-1: #16a34a;
-    --blob-2: #052e16;
-    --blob-3: #4ade80;
+    --blob-1: #3b82f6;
+    --blob-2: #a855f7;
+    --blob-3: #f472b6;
+
+    --water-deep: #075985;
+    --water-mid: #0ea5e9;
+    --water-light: #38bdf8;
+    --water-foam: #e0f2fe;
   }
 }
 
