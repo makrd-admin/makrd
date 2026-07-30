@@ -15,3 +15,21 @@ export async function requireUser(): Promise<User> {
 
   return user;
 }
+
+/** Redirects to /dashboard if the signed-in user isn't an admin; otherwise returns them. */
+export async function requireAdmin(): Promise<User> {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.is_admin) {
+    redirect("/dashboard");
+  }
+
+  return user;
+}

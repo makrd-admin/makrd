@@ -30,10 +30,12 @@ export default function CommunityChat() {
       } = await supabase.auth.getUser();
       setUserId(user?.id ?? null);
 
-      const { data: profiles } = await supabase.from("profiles").select("id, display_name");
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, username, display_name");
       const nameMap: Record<string, string> = {};
       for (const p of profiles ?? []) {
-        nameMap[p.id] = p.display_name ?? "A maKr";
+        nameMap[p.id] = p.username ?? p.display_name ?? "A maKr";
       }
 
       const { data: history, error } = await supabase

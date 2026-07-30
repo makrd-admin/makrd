@@ -280,27 +280,62 @@ export type Database = {
           created_at: string;
           display_name: string | null;
           id: string;
+          is_admin: boolean;
           location: string | null;
           points_balance: number;
           updated_at: string;
+          username: string | null;
         };
         Insert: {
           created_at?: string;
           display_name?: string | null;
           id: string;
+          is_admin?: boolean;
           location?: string | null;
           points_balance?: number;
           updated_at?: string;
+          username?: string | null;
         };
         Update: {
           created_at?: string;
           display_name?: string | null;
           id?: string;
+          is_admin?: boolean;
           location?: string | null;
           points_balance?: number;
           updated_at?: string;
+          username?: string | null;
         };
         Relationships: [];
+      };
+      page_views: {
+        Row: {
+          created_at: string;
+          id: string;
+          path: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          path: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          path?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "page_views_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
@@ -328,8 +363,10 @@ export type Database = {
           user_id: string;
         };
       };
+      log_page_view: { Args: { p_path: string }; Returns: undefined };
       mark_verification: { Args: { p_job_id: string }; Returns: undefined };
       release_job: { Args: { p_job_id: string }; Returns: undefined };
+      set_username: { Args: { p_username: string }; Returns: undefined };
       start_printing: { Args: { p_job_id: string }; Returns: undefined };
     };
     Enums: {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LINKS, isLinkActive } from "./nav-links";
+import { navLinksFor, isLinkActive } from "./nav-links";
 
 /**
  * Hamburger button + slide-in drawer, shown only below the `sm` breakpoint.
@@ -12,7 +12,7 @@ import { LINKS, isLinkActive } from "./nav-links";
  * on small screens the links live here instead — one tap away rather than
  * a hidden horizontal scroll.
  */
-export default function MobileNav() {
+export default function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -54,7 +54,7 @@ export default function MobileNav() {
             onClick={() => setIsOpen(false)}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           />
-          <div className="absolute top-0 right-0 flex h-full w-64 max-w-[80vw] flex-col gap-1 border-l border-[var(--glass-border)] bg-[var(--background)] p-5 shadow-2xl">
+          <div className="absolute top-0 right-0 flex h-full w-64 max-w-[80vw] flex-col gap-1 border-l border-neutral-200 bg-white p-5 shadow-2xl dark:border-neutral-800 dark:bg-neutral-950">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
                 Menu
@@ -80,7 +80,7 @@ export default function MobileNav() {
               </button>
             </div>
 
-            {LINKS.map((link) => {
+            {navLinksFor(isAdmin).map((link) => {
               const isActive = isLinkActive(pathname, link.href);
               return (
                 <Link

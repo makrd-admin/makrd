@@ -15,7 +15,7 @@ export default async function CommunityPage() {
   const { data: printers, error } = await supabase
     .from("printers")
     .select(
-      "id, make, model, build_volume, location, description, materials, status, created_at, owner_id, owner:profiles(display_name)",
+      "id, make, model, build_volume, location, description, materials, status, created_at, owner_id, owner:profiles(username, display_name)",
     )
     .eq("status", "active")
     .order("created_at", { ascending: false });
@@ -46,7 +46,7 @@ export default async function CommunityPage() {
                       {printer.make} {printer.model}
                     </span>
                     <span className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-500 dark:bg-white/10 dark:text-neutral-400">
-                      {printer.owner?.display_name ?? "A maKr"}
+                      {printer.owner?.username ?? printer.owner?.display_name ?? "A maKr"}
                     </span>
                   </div>
                   {printer.location && (
@@ -69,7 +69,8 @@ export default async function CommunityPage() {
                       href={`/messages/${printer.owner_id}`}
                       className="mt-2 inline-block text-sm font-medium underline underline-offset-2"
                     >
-                      Message {printer.owner?.display_name ?? "this maKr"}
+                      Message{" "}
+                      {printer.owner?.username ?? printer.owner?.display_name ?? "this maKr"}
                     </Link>
                   )}
                 </li>

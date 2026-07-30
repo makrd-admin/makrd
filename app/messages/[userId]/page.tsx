@@ -21,7 +21,7 @@ export default async function DirectMessagePage({
   const supabase = await createClient();
   const { data: otherProfile } = await supabase
     .from("profiles")
-    .select("id, display_name")
+    .select("id, username, display_name")
     .eq("id", userId)
     .maybeSingle();
 
@@ -31,7 +31,9 @@ export default async function DirectMessagePage({
 
   return (
     <main className="mx-auto w-full max-w-2xl p-6 sm:p-10">
-      <h1 className="mb-6 text-xl font-semibold">{otherProfile.display_name ?? "A maKr"}</h1>
+      <h1 className="mb-6 text-xl font-semibold">
+        {otherProfile.username ?? otherProfile.display_name ?? "A maKr"}
+      </h1>
       <DirectMessageChat currentUserId={user.id} otherUserId={otherProfile.id} />
     </main>
   );

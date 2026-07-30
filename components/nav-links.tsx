@@ -15,16 +15,22 @@ export const LINKS = [
   { href: "/announcements", label: "Announcements" },
 ];
 
+const ADMIN_LINK = { href: "/admin", label: "Admin" };
+
 export function isLinkActive(pathname: string, href: string) {
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
 }
 
-export default function NavLinks() {
+export function navLinksFor(isAdmin: boolean) {
+  return isAdmin ? [...LINKS, ADMIN_LINK] : LINKS;
+}
+
+export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
 
   return (
     <>
-      {LINKS.map((link) => {
+      {navLinksFor(isAdmin).map((link) => {
         const isActive = isLinkActive(pathname, link.href);
         return (
           <Link

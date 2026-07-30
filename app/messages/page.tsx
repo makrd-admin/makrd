@@ -10,7 +10,7 @@ export default async function MessagesPage() {
   const supabase = await createClient();
 
   const [{ data: profiles }, { data: recent }] = await Promise.all([
-    supabase.from("profiles").select("id, display_name").neq("id", user.id),
+    supabase.from("profiles").select("id, username, display_name").neq("id", user.id),
     supabase
       .from("direct_messages")
       .select("sender_id, recipient_id, content, created_at")
@@ -37,7 +37,7 @@ export default async function MessagesPage() {
       }
       if (a.latest) return -1;
       if (b.latest) return 1;
-      return (a.display_name ?? "").localeCompare(b.display_name ?? "");
+      return (a.username ?? a.display_name ?? "").localeCompare(b.username ?? b.display_name ?? "");
     });
 
   return (
@@ -60,7 +60,7 @@ export default async function MessagesPage() {
                 className="glass flex items-center justify-between rounded-2xl p-4 transition-transform hover:scale-[1.01]"
               >
                 <div className="min-w-0">
-                  <p className="font-medium">{p.display_name ?? "A maKr"}</p>
+                  <p className="font-medium">{p.username ?? p.display_name ?? "A maKr"}</p>
                   {p.latest && (
                     <p className="truncate text-sm text-neutral-500 dark:text-neutral-400">
                       {p.latest.content}

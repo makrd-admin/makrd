@@ -30,7 +30,37 @@ export async function updateSession(request: NextRequest) {
 
   // Do not remove: this call refreshes the session and must run before any
   // other logic that reads cookies, or the refreshed session won't persist.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+  const isAppRoute = !pathname.startsWith("/api") && !pathname.startsWith("/auth");
+
+  if (user && isAppRoute) {
+    // Every signed-in member must have a unique username before doing
+    // anything else — gate every route except the page that sets one.
+    if (pathname !== "/complete-profile") {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.username) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/complete-profile";
+        return NextResponse.redirect(url);
+      }
+    }
+
+    // Log real navigations only — skip Next's own background prefetch
+    // requests (they carry this header) so "who visited what" isn't
+    // inflated by links the user merely hovered over or scrolled past.
+    if (request.method === "GET" && !request.headers.get("next-router-prefetch")) {
+      await supabase.rpc("log_page_view", { p_path: pathname });
+    }
+  }
 
   return supabaseResponse;
 }
