@@ -72,6 +72,14 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-30 (very late)** — Mohit confirmed the mobile drawer from the previous entry
+  actually opens correctly (good — the "not visually confirmed" caveat there is resolved),
+  but couldn't read the links: `.glass-frost` is still translucent/blurred, not opaque
+  enough against arbitrary page content on his device. Swapped it for a fully solid panel
+  (`bg-[var(--background)]`, no blur) plus a border and shadow for depth. Small, targeted
+  fix — verified typecheck/lint/format/build, pushed to `main`/`mohit`, redeployed,
+  live on `https://makrd.vercel.app`.
+
 - **2026-07-30 (later night)** — Real Benchy on the login screen, a mobile nav drawer, and
   a live data point on the session-persistence bug.
   **`/login` was still showing the old flat SVG loader.** Missed in every earlier "use the
