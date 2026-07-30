@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const LINKS = [
+export const LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/printers", label: "Printers" },
   { href: "/jobs", label: "Jobs" },
@@ -15,14 +15,17 @@ const LINKS = [
   { href: "/announcements", label: "Announcements" },
 ];
 
+export function isLinkActive(pathname: string, href: string) {
+  return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+}
+
 export default function NavLinks() {
   const pathname = usePathname();
 
   return (
     <>
       {LINKS.map((link) => {
-        const isActive =
-          pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
+        const isActive = isLinkActive(pathname, link.href);
         return (
           <Link
             key={link.href}

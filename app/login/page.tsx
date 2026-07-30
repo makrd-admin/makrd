@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import PrinterLoader from "@/components/printer-loader";
+import SkipperLoadingScene from "@/components/skipper-loading-scene";
 import EmailForm from "./email-form";
 
 export default function LoginPage() {
@@ -31,7 +31,7 @@ export default function LoginPage() {
       </Link>
 
       <div className="glass-strong flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl p-10 text-center">
-        <PrinterLoader size={120} />
+        <SkipperLoadingScene size={140} />
 
         <div>
           <h1 className="text-2xl font-semibold">Welcome to maKrd</h1>

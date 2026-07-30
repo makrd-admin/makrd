@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import NavLinks from "./nav-links";
+import MobileNav from "./mobile-nav";
 import LogoMark from "./logo-mark";
 import ScrollHide from "./scroll-hide";
 
@@ -22,15 +23,16 @@ export default async function Nav() {
 
   return (
     <ScrollHide>
-      <header className="glass-nav flex w-full max-w-5xl items-center gap-3 rounded-2xl px-5 py-2.5">
+      <header className="glass-nav flex w-full max-w-5xl items-center justify-between gap-3 rounded-2xl px-5 py-2.5">
         <Link href="/dashboard" className="flex shrink-0 items-center gap-1.5">
           <LogoMark size={20} />
           <span className="text-gradient text-base font-semibold">maKrd</span>
         </Link>
-        <nav className="no-scrollbar flex flex-1 items-center gap-1 overflow-x-auto">
+        <nav className="no-scrollbar hidden flex-1 items-center gap-1 overflow-x-auto sm:flex">
           <NavLinks />
         </nav>
         <div className="flex shrink-0 items-center gap-3 text-sm">
+          <MobileNav />
           <Link
             href="/profile"
             className="rounded-full bg-black/5 px-3 py-1 font-medium text-neutral-700 transition-colors hover:bg-black/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/15"
