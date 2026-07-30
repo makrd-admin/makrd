@@ -72,6 +72,38 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-30 (evening)** — Shipped the pending mascot-glass/water-hero redesign, then
+  fixed the actual cause of Mohit's "green bottom part vs blue water part" report.
+  First, deployed the frosted-glass mascot panel and the water-sailing hero redesign
+  that had been sitting locally verified-but-unshipped since earlier in the day (per
+  the entry below) — Mohit asked directly for this ("most of the work is done just
+  deploy everything"), so pushed to `main`/`mohit` and redeployed without re-litigating
+  the design.
+  **Found the real bug behind the green/blue mismatch**: the vibrant-palette recolor
+  earlier today updated `skipper-3d.tsx`'s materials but missed `benchy-scroll-scene.tsx`
+  — the boat's hull was still `#16a34a` (green) and one of the scene's directional
+  lights was still `#4ade80` (green), both sitting in a scene that's otherwise entirely
+  blue water. Boat is now off-white (`#f5f5f0`, plain "molded plastic," won't clash with
+  any water color); the stray light is now pale sky blue (`#7dd3fc`).
+  **Made the water read as more real, per the ask.** `WaterSurface` now writes a
+  per-vertex color attribute alongside its existing sine-wave displacement, blending
+  from deep-water blue to white foam wherever a wave crest is tall enough
+  (`THREE.MathUtils.smoothstep` on the same height value already being computed each
+  frame) — whitecaps instead of a flat blue plane. Added `HullWake`, a soft pulsing
+  white ring that tracks the boat's world position (lifted out of `ScrollBenchy` into a
+  shared `boatPositionRef` so both components read the same source of truth) and sits
+  right at the waterline — reads as a bow wave breaking against the hull without any
+  real fluid simulation.
+  Tried reconnecting `claude-in-chrome` again this session (Mohit relaunched with
+  `--chrome` per my instructions, tools became available) but `tabs_context_mcp` still
+  reports the extension itself as not connected — progress over the earlier "unknown
+  skill" error, but still no actual browser access. Verified via `pnpm typecheck`/
+  `lint`/`format:check`/`build` and a dev-server smoke test only; the foam/color
+  rendering has not been seen firsthand.
+  Pushed to `main` and `mohit` across two commits, redeployed via the manual
+  `vercel build --prod` + `vercel deploy --prebuilt --prod` workflow after each,
+  verified live on `https://makrd.vercel.app`.
+
 - **2026-07-30 (later)** — Redesigned the landing hero's scroll narrative per Mohit's
   feedback that the scale-up-in-place didn't read as "being printed," and per his
   fuller description of what he actually wanted: no printer at all, just the benchy
