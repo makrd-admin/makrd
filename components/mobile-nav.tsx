@@ -54,7 +54,7 @@ export default function MobileNav() {
             onClick={() => setIsOpen(false)}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           />
-          <div className="glass-frost absolute top-0 right-0 flex h-full w-64 max-w-[80vw] flex-col gap-1 p-5">
+          <div className="absolute top-0 right-0 flex h-full w-64 max-w-[80vw] flex-col gap-1 border-l border-[var(--glass-border)] bg-[var(--background)] p-5 shadow-2xl">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
                 Menu
