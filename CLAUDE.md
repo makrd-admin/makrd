@@ -72,6 +72,43 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-30 (night)** — `claude-in-chrome` finally connected this session — first real
+  browser verification since 2026-07-29 afternoon. Used it to catch and fix a bug my own
+  reasoning had missed, then landed three more requested changes.
+  **The wake "white circle" was actually a rendering bug, not just a design complaint.**
+  Screenshotted the live site and saw the previous foam ring rendering as a translucent
+  vertical panel poking through the hull — a flat disc viewed nearly edge-on from this
+  scene's low, close camera angles all but disappears into a sliver, and my y=-0.4
+  placement guess was wrong anyway (wrote a one-off script to compute the model's real
+  normalized bounding box: Y spans -0.72 to 0.72, so -0.4 sat inside the hull/cabin, not
+  at the waterline). Fixed by switching the foam to flattened spheres (real volume from
+  any angle) at the correct y≈-0.6, then re-verified live — confirmed clean, no more
+  artifact. **Lesson: when a visual bug report doesn't fully make sense from reading the
+  code, get a screenshot before guessing at a fix — the actual rendering can differ from
+  what the transform math suggests.**
+  **Smoothed the opening scroll** — boat's scale-in was linear over an 8%-of-scroll
+  window, read as an abrupt pop. Eased with smoothstep over the same window instead.
+  **Flipped the internal app back to black-and-green.** The vibrant blue/violet/pink
+  push from earlier never touched the landing page (which already has its own scoped
+  green override) but WAS the base `:root` theme for every other route — dashboard,
+  login, printers, etc. Mohit called this out directly ("internal sites... not purple
+  like it is now"). Updated the base CSS vars back to black-and-green (matching what
+  the landing override already uses in spirit, kept as a separate distinct palette),
+  plus the mascot's 3D model materials and the Razorpay theme color, which had also
+  drifted vibrant. Verified live on `/login` and the authenticated `/dashboard` — both
+  correctly green now.
+  **Gave the mascot/loading-screen Benchy a real overhaul**, not just a color fix. It
+  still had the old print-and-grow-on-a-plate loop and mismatched hull color, both
+  leftover from before the landing hero dropped the "printer" framing entirely per
+  earlier feedback. Removed the build plate and the scale-from-zero cycle, replaced with
+  the same gentle already-afloat bob/sway the landing hero's boat uses, matched hull
+  color to the same off-white — same real Benchy, consistent everywhere it appears now.
+  Verified: `pnpm typecheck`/`lint`/`format:check`/`build` all pass; confirmed live via
+  claude-in-chrome on both localhost and the deployed site (mascot renders as the real
+  3D model in the corner, no console errors on landing or dashboard). Pushed to `main`
+  and `mohit`, redeployed via the manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow, verified live on `https://makrd.vercel.app`.
+
 - **2026-07-30 (evening)** — Shipped the pending mascot-glass/water-hero redesign, then
   fixed the actual cause of Mohit's "green bottom part vs blue water part" report.
   First, deployed the frosted-glass mascot panel and the water-sailing hero redesign
