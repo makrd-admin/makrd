@@ -95,26 +95,54 @@ function WaterSurface() {
   );
 }
 
-/** A soft foam ring that tracks the boat's position at the waterline,
- * standing in for a bow wave / wake without simulating real fluid
- * displacement — reads as "waves breaking against the hull" from a
- * distance, which is all this scale of scene needs. */
-function HullWake({ boatPosition }: { boatPosition: React.RefObject<THREE.Vector3> }) {
-  const ringRef = useRef<THREE.Mesh>(null);
+/** A single patch of foam where a wave breaks against the hull — a
+ * flattened sphere (a soft foam "mound" with real volume) rather than a
+ * flat disc. A flat circle only reads as foam from directly above; from
+ * the scene's low, near-water-level camera angles it's viewed almost
+ * edge-on and disappears into a thin sliver. A flattened sphere keeps
+ * some visible height from any angle. Independently pulsing so a cluster
+ * of these doesn't look like one uniform ring. Rendered as a child of the
+ * boat's own group (not tracked via a shared position ref), so it
+ * automatically inherits the hull's position, rotation, and scale-in —
+ * it can't drift out of sync with the model the way a
+ * separately-positioned mesh could. */
+function FoamSplash({
+  position,
+  phase,
+  size = 0.16,
+}: {
+  position: [number, number, number];
+  phase: number;
+  size?: number;
+}) {
+  const ref = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
-    if (!ringRef.current) return;
-    const p = boatPosition.current;
-    ringRef.current.position.set(p.x, WATER_Y + 0.015, p.z);
-    const pulse = 1 + Math.sin(clock.elapsedTime * 3) * 0.08;
-    ringRef.current.scale.set(pulse, pulse, 1);
+    if (!ref.current) return;
+    const pulse = 0.8 + Math.sin(clock.elapsedTime * 2.2 + phase) * 0.25;
+    ref.current.scale.set(pulse, pulse * 0.4, pulse);
   });
 
   return (
-    <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[0.32, 0.62, 32]} />
-      <meshBasicMaterial color="#f0f9ff" transparent opacity={0.55} depthWrite={false} />
+    <mesh ref={ref} position={position}>
+      <sphereGeometry args={[size, 12, 8]} />
+      <meshBasicMaterial color="#f0f9ff" transparent opacity={0.7} depthWrite={false} />
     </mesh>
+  );
+}
+
+/** Foam breaking against both sides of the hull, fore and aft — four
+ * splashes in a loose diamond right at the waterline (near the bottom of
+ * the hull's bounding box, y ≈ -0.72 to -0.9 before scaling) rather than a
+ * single ring, so it reads as "waves hitting the boat" instead of a halo. */
+function HullSpray() {
+  return (
+    <>
+      <FoamSplash position={[0.62, -0.6, 0.3]} phase={0} size={0.16} />
+      <FoamSplash position={[-0.6, -0.6, 0.22]} phase={1.6} size={0.14} />
+      <FoamSplash position={[0.55, -0.62, -0.32]} phase={3.1} size={0.13} />
+      <FoamSplash position={[-0.55, -0.62, -0.28]} phase={4.6} size={0.15} />
+    </>
   );
 }
 
@@ -125,20 +153,18 @@ function HullWake({ boatPosition }: { boatPosition: React.RefObject<THREE.Vector
  * component (rather than reading the group's transform back out) so both
  * can share one `target` position each frame without an extra render.
  */
-function ScrollBenchy({
-  progressRef,
-  boatPosition,
-}: {
-  progressRef: React.RefObject<number>;
-  boatPosition: React.RefObject<THREE.Vector3>;
-}) {
+function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> }) {
   const geometry = useBenchyGeometry();
   const groupRef = useRef<THREE.Group>(null);
-  const target = boatPosition;
+  const target = useRef(new THREE.Vector3());
 
   useFrame(({ camera, clock }) => {
     const p = progressRef.current;
-    const appearP = THREE.MathUtils.clamp(p / APPEAR_END, 0, 1);
+    // Eased rather than linear, and over a wider window than the raw
+    // scroll fraction would give — a straight linear scale-in over a
+    // short window read as an abrupt "pop" rather than a smooth entrance.
+    const appearLinear = THREE.MathUtils.clamp(p / APPEAR_END, 0, 1);
+    const appearP = appearLinear * appearLinear * (3 - 2 * appearLinear); // smoothstep
     const t = clock.elapsedTime;
 
     if (groupRef.current) {
@@ -190,6 +216,7 @@ function ScrollBenchy({
       <mesh geometry={geometry} castShadow receiveShadow>
         <meshPhysicalMaterial color="#f5f5f0" roughness={0.45} metalness={0.05} clearcoat={0.5} />
       </mesh>
+      <HullSpray />
     </group>
   );
 }
@@ -217,7 +244,6 @@ export default function BenchyScrollScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
-  const boatPositionRef = useRef(new THREE.Vector3());
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
@@ -278,9 +304,8 @@ export default function BenchyScrollScene() {
             <directionalLight position={[3, 5, 2]} intensity={1.3} castShadow />
             <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#7dd3fc" />
             <Suspense fallback={null}>
-              <ScrollBenchy progressRef={progressRef} boatPosition={boatPositionRef} />
+              <ScrollBenchy progressRef={progressRef} />
               <WaterSurface />
-              <HullWake boatPosition={boatPositionRef} />
             </Suspense>
           </Canvas>
         </div>

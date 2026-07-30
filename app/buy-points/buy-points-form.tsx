@@ -36,7 +36,7 @@ export default function BuyPointsForm() {
       description: "Points top-up",
       order_id: state.order.id,
       prefill: { email: state.order.email },
-      theme: { color: "#2563eb" },
+      theme: { color: "#16a34a" },
       handler: () => {
         // The webhook (server-to-server, signature-verified) is what
         // actually credits points — this is just UI feedback for the payer.
