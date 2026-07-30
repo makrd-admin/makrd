@@ -40,43 +40,80 @@ const STAGES = [
 ];
 
 const WATER_Y = -0.34;
+const WATER_DEEP = new THREE.Color("#0369a1");
+const WATER_FOAM = new THREE.Color("#f0f9ff");
 
 /** A large rippling water plane the benchy sails across for the whole
  * scene (not just a finale overlay). Segments are displaced with a couple
  * of overlapping sine waves each frame — cheap, no shader — instead of a
- * flat static plane. */
+ * flat static plane. Wave peaks are tinted toward white via per-vertex
+ * colors (computed from the same displacement each frame) so the surface
+ * reads as real water catching whitecaps, not a flat blue sheet. */
 function WaterSurface() {
   const geomRef = useRef<THREE.PlaneGeometry>(null);
   const basePositions = useRef<Float32Array | null>(null);
+  const tmpColor = useRef(new THREE.Color());
 
   useFrame(({ clock }) => {
     const geom = geomRef.current;
     if (!geom) return;
     if (!basePositions.current) {
       basePositions.current = (geom.attributes.position.array as Float32Array).slice();
+      const colors = new Float32Array(geom.attributes.position.count * 3);
+      geom.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     }
     const base = basePositions.current;
     const pos = geom.attributes.position as THREE.BufferAttribute;
+    const color = geom.attributes.color as THREE.BufferAttribute;
     const t = clock.elapsedTime;
     for (let i = 0; i < pos.count; i++) {
       const x = base[i * 3];
       const y = base[i * 3 + 1];
-      pos.setZ(i, Math.sin(x * 0.5 + t) * 0.05 + Math.sin(y * 0.6 - t * 0.8) * 0.04);
+      const wave = Math.sin(x * 0.5 + t) * 0.05 + Math.sin(y * 0.6 - t * 0.8) * 0.04;
+      pos.setZ(i, wave);
+      // Foam at wave crests only (top ~25% of the displacement range).
+      const foamAmount = THREE.MathUtils.smoothstep(wave, 0.045, 0.09);
+      tmpColor.current.copy(WATER_DEEP).lerp(WATER_FOAM, foamAmount);
+      color.setXYZ(i, tmpColor.current.r, tmpColor.current.g, tmpColor.current.b);
     }
     pos.needsUpdate = true;
+    color.needsUpdate = true;
   });
 
   return (
     <mesh position={[0, WATER_Y, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry ref={geomRef} args={[36, 36, 40, 40]} />
+      <planeGeometry ref={geomRef} args={[36, 36, 60, 60]} />
       <meshPhysicalMaterial
-        color="#0ea5e9"
+        vertexColors
         roughness={0.2}
         metalness={0.05}
         clearcoat={0.7}
         transparent
-        opacity={0.85}
+        opacity={0.92}
       />
+    </mesh>
+  );
+}
+
+/** A soft foam ring that tracks the boat's position at the waterline,
+ * standing in for a bow wave / wake without simulating real fluid
+ * displacement — reads as "waves breaking against the hull" from a
+ * distance, which is all this scale of scene needs. */
+function HullWake({ boatPosition }: { boatPosition: React.RefObject<THREE.Vector3> }) {
+  const ringRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (!ringRef.current) return;
+    const p = boatPosition.current;
+    ringRef.current.position.set(p.x, WATER_Y + 0.015, p.z);
+    const pulse = 1 + Math.sin(clock.elapsedTime * 3) * 0.08;
+    ringRef.current.scale.set(pulse, pulse, 1);
+  });
+
+  return (
+    <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[0.32, 0.62, 32]} />
+      <meshBasicMaterial color="#f0f9ff" transparent opacity={0.55} depthWrite={false} />
     </mesh>
   );
 }
@@ -88,10 +125,16 @@ function WaterSurface() {
  * component (rather than reading the group's transform back out) so both
  * can share one `target` position each frame without an extra render.
  */
-function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> }) {
+function ScrollBenchy({
+  progressRef,
+  boatPosition,
+}: {
+  progressRef: React.RefObject<number>;
+  boatPosition: React.RefObject<THREE.Vector3>;
+}) {
   const geometry = useBenchyGeometry();
   const groupRef = useRef<THREE.Group>(null);
-  const target = useRef(new THREE.Vector3());
+  const target = boatPosition;
 
   useFrame(({ camera, clock }) => {
     const p = progressRef.current;
@@ -145,7 +188,7 @@ function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> })
   return (
     <group ref={groupRef}>
       <mesh geometry={geometry} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#16a34a" roughness={0.4} metalness={0.1} clearcoat={0.4} />
+        <meshPhysicalMaterial color="#f5f5f0" roughness={0.45} metalness={0.05} clearcoat={0.5} />
       </mesh>
     </group>
   );
@@ -174,6 +217,7 @@ export default function BenchyScrollScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
+  const boatPositionRef = useRef(new THREE.Vector3());
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
@@ -232,10 +276,11 @@ export default function BenchyScrollScene() {
           <Canvas shadows camera={{ position: [0, 1, 3.4], fov: 42 }}>
             <ambientLight intensity={0.65} />
             <directionalLight position={[3, 5, 2]} intensity={1.3} castShadow />
-            <directionalLight position={[-3, 2, -2]} intensity={0.35} color="#4ade80" />
+            <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#7dd3fc" />
             <Suspense fallback={null}>
-              <ScrollBenchy progressRef={progressRef} />
+              <ScrollBenchy progressRef={progressRef} boatPosition={boatPositionRef} />
               <WaterSurface />
+              <HullWake boatPosition={boatPositionRef} />
             </Suspense>
           </Canvas>
         </div>
