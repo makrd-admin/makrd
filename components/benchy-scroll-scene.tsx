@@ -10,7 +10,12 @@ import LogoMark from "./logo-mark";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const BUILD_END = 0.8; // fraction of total scroll spent building + orbiting
+// Camera choreography checkpoints, as fractions of total scroll progress.
+const APPEAR_END = 0.08; // the benchy scales in, already afloat
+const ORBIT_END = 0.4; // camera orbits close around it as it drifts
+const FRONT_AT = 0.7; // camera settles to a low, front-on view, water under the hull
+// FRONT_AT -> 1: camera pulls back and up into a wide ocean-scenery shot
+
 const STAGES = [
   {
     kicker: "Peer-to-peer 3D printing",
@@ -34,29 +39,107 @@ const STAGES = [
   },
 ];
 
+const WATER_Y = -0.34;
+
+/** A large rippling water plane the benchy sails across for the whole
+ * scene (not just a finale overlay). Segments are displaced with a couple
+ * of overlapping sine waves each frame — cheap, no shader — instead of a
+ * flat static plane. */
+function WaterSurface() {
+  const geomRef = useRef<THREE.PlaneGeometry>(null);
+  const basePositions = useRef<Float32Array | null>(null);
+
+  useFrame(({ clock }) => {
+    const geom = geomRef.current;
+    if (!geom) return;
+    if (!basePositions.current) {
+      basePositions.current = (geom.attributes.position.array as Float32Array).slice();
+    }
+    const base = basePositions.current;
+    const pos = geom.attributes.position as THREE.BufferAttribute;
+    const t = clock.elapsedTime;
+    for (let i = 0; i < pos.count; i++) {
+      const x = base[i * 3];
+      const y = base[i * 3 + 1];
+      pos.setZ(i, Math.sin(x * 0.5 + t) * 0.05 + Math.sin(y * 0.6 - t * 0.8) * 0.04);
+    }
+    pos.needsUpdate = true;
+  });
+
+  return (
+    <mesh position={[0, WATER_Y, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry ref={geomRef} args={[36, 36, 40, 40]} />
+      <meshPhysicalMaterial
+        color="#0ea5e9"
+        roughness={0.2}
+        metalness={0.05}
+        clearcoat={0.7}
+        transparent
+        opacity={0.85}
+      />
+    </mesh>
+  );
+}
+
+/**
+ * The benchy itself: appears already afloat (no printer, no build-up),
+ * drifts slowly across the water as scroll advances, and bobs/sways in
+ * place once fully appeared. The camera choreography lives in this same
+ * component (rather than reading the group's transform back out) so both
+ * can share one `target` position each frame without an extra render.
+ */
 function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> }) {
   const geometry = useBenchyGeometry();
   const groupRef = useRef<THREE.Group>(null);
+  const target = useRef(new THREE.Vector3());
 
-  useFrame(({ camera }) => {
+  useFrame(({ camera, clock }) => {
     const p = progressRef.current;
-    const buildP = THREE.MathUtils.clamp(p / BUILD_END, 0, 1);
-    const hopP = THREE.MathUtils.clamp((p - BUILD_END) / (1 - BUILD_END), 0, 1);
+    const appearP = THREE.MathUtils.clamp(p / APPEAR_END, 0, 1);
+    const t = clock.elapsedTime;
 
     if (groupRef.current) {
-      groupRef.current.scale.setScalar(Math.max(0.03, buildP));
-      const hopArc = Math.sin(hopP * Math.PI) * 0.9;
-      groupRef.current.position.y = hopArc - hopP * 2.2;
-      groupRef.current.rotation.z = hopP * 0.6;
-      groupRef.current.rotation.x = hopP * 0.3;
+      groupRef.current.scale.setScalar(Math.max(0.06, appearP));
+      const driftZ = -p * 1.6;
+      const driftX = Math.sin(p * Math.PI * 1.3) * 0.35;
+      const bob = Math.sin(t * 1.6) * 0.045 * appearP;
+      groupRef.current.position.set(driftX, bob, driftZ);
+      groupRef.current.rotation.z = Math.sin(t * 0.9) * 0.02 * appearP;
+      groupRef.current.rotation.y = Math.sin(p * Math.PI * 1.3) * 0.18;
+      target.current.copy(groupRef.current.position);
     }
 
-    const orbitP = Math.min(p, BUILD_END) / BUILD_END;
-    const angle = orbitP * Math.PI * 1.7;
-    const radius = 3.4 + hopP * 1.2;
-    const height = 0.6 + Math.sin(orbitP * Math.PI) * 1.1 - hopP * 0.4;
-    camera.position.set(Math.sin(angle) * radius, height, Math.cos(angle) * radius);
-    camera.lookAt(0, 0, 0);
+    if (p <= ORBIT_END) {
+      // stage 1: orbit close around the benchy as it settles onto the water
+      const orbitP = THREE.MathUtils.clamp(p / ORBIT_END, 0, 1);
+      const angle = orbitP * Math.PI * 1.6;
+      const radius = 3.0;
+      const height = 0.9 + Math.sin(orbitP * Math.PI) * 0.55;
+      camera.position.set(
+        target.current.x + Math.sin(angle) * radius,
+        target.current.y + height,
+        target.current.z + Math.cos(angle) * radius,
+      );
+    } else if (p <= FRONT_AT) {
+      // stage 2: converge to a low, front-on view — water clearly under
+      // the hull, benchy still large/close
+      const t2 = THREE.MathUtils.clamp((p - ORBIT_END) / (FRONT_AT - ORBIT_END), 0, 1);
+      const angle = THREE.MathUtils.lerp(Math.PI * 1.6, Math.PI * 2, t2);
+      const radius = THREE.MathUtils.lerp(3.0, 2.2, t2);
+      const height = THREE.MathUtils.lerp(0.9, 0.3, t2);
+      camera.position.set(
+        target.current.x + Math.sin(angle) * radius,
+        target.current.y + height,
+        target.current.z + Math.cos(angle) * radius,
+      );
+    } else {
+      // stage 3: pull back and up into a wide ocean-scenery shot
+      const t3 = THREE.MathUtils.clamp((p - FRONT_AT) / (1 - FRONT_AT), 0, 1);
+      const radius = THREE.MathUtils.lerp(2.2, 10, t3);
+      const height = THREE.MathUtils.lerp(0.3, 5.2, t3);
+      camera.position.set(target.current.x, target.current.y + height, target.current.z + radius);
+    }
+    camera.lookAt(target.current.x, target.current.y, target.current.z);
   });
 
   return (
@@ -68,191 +151,15 @@ function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> })
   );
 }
 
-/** A small cooling fan for the print head — a shroud box with a blade disk
- * that actually spins, rather than a static decal, so it reads as a fan
- * rather than another flat panel. */
-function PrintHeadFan({ position }: { position: [number, number, number] }) {
-  const bladeRef = useRef<THREE.Mesh>(null);
-  useFrame((_, delta) => {
-    if (bladeRef.current) bladeRef.current.rotation.z += delta * 18;
-  });
-  return (
-    <group position={position}>
-      <mesh castShadow>
-        <boxGeometry args={[0.1, 0.1, 0.025]} />
-        <meshStandardMaterial color="#0f172a" roughness={0.4} metalness={0.5} transparent />
-      </mesh>
-      <mesh ref={bladeRef} position={[0, 0, 0.018]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.038, 0.038, 0.008, 8]} />
-        <meshStandardMaterial color="#475569" roughness={0.4} metalness={0.6} transparent />
-      </mesh>
-    </group>
-  );
-}
-
-/** A stylized (not any specific branded machine) enclosed-printer gantry.
- * The frame is a proper closed rectangle — 4 uprights joined by a full top
- * ring, not a single crossbar floating disconnected between them (the
- * previous version's rail sat at z=0 while the posts were at z=±BED, so it
- * never actually touched any of them). The print head rides two inset
- * Z-guide rods as one physically joined assembly — rail, carriage, and
- * head all move together and stay flush against each other — instead of a
- * lone cube drifting through empty space below a fixed rail. Purely
- * decorative, no interaction with the mesh. */
-function PrinterRig({ progressRef }: { progressRef: React.RefObject<number> }) {
-  const gantryRef = useRef<THREE.Group>(null);
-  const headSweepRef = useRef<THREE.Group>(null);
-  const BED = 1.7;
-  const FRAME_TOP = 1.2;
-  const FRAME_BOTTOM = -0.9;
-  const RAIL_THICKNESS = 0.07;
-  const Z_ROD_X = BED * 0.6;
-  const GANTRY_MIN_Y = -0.58;
-  const GANTRY_MAX_Y = 1.0;
-  const postHeight = FRAME_TOP - FRAME_BOTTOM;
-
-  useFrame(({ clock }) => {
-    const p = progressRef.current;
-    const buildP = THREE.MathUtils.clamp(p / BUILD_END, 0, 1);
-    const hopP = THREE.MathUtils.clamp((p - BUILD_END) / (1 - BUILD_END), 0, 1);
-
-    if (gantryRef.current) {
-      gantryRef.current.position.y = GANTRY_MIN_Y + buildP * (GANTRY_MAX_Y - GANTRY_MIN_Y);
-      gantryRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          const material = child.material as THREE.MeshStandardMaterial;
-          if (material) material.opacity = 1 - hopP;
-        }
-      });
-    }
-    if (headSweepRef.current) {
-      headSweepRef.current.position.x = Math.sin(clock.elapsedTime * 3) * Z_ROD_X * 0.68;
-    }
-  });
-
-  const postPositions: [number, number, number][] = [
-    [-BED, (FRAME_TOP + FRAME_BOTTOM) / 2, -BED],
-    [BED, (FRAME_TOP + FRAME_BOTTOM) / 2, -BED],
-    [-BED, (FRAME_TOP + FRAME_BOTTOM) / 2, BED],
-    [BED, (FRAME_TOP + FRAME_BOTTOM) / 2, BED],
-  ];
-
-  return (
-    <group>
-      {/* corner uprights */}
-      {postPositions.map((pos, i) => (
-        <mesh key={i} position={pos} castShadow>
-          <boxGeometry args={[0.06, postHeight, 0.06]} />
-          <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
-        </mesh>
-      ))}
-
-      {/* top frame — a full closed rectangle joining all 4 uprights,
-          instead of a single crossbar floating between them */}
-      <mesh position={[0, FRAME_TOP, -BED]} castShadow>
-        <boxGeometry args={[BED * 2 + 0.1, RAIL_THICKNESS, RAIL_THICKNESS]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
-      </mesh>
-      <mesh position={[0, FRAME_TOP, BED]} castShadow>
-        <boxGeometry args={[BED * 2 + 0.1, RAIL_THICKNESS, RAIL_THICKNESS]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
-      </mesh>
-      <mesh position={[-BED, FRAME_TOP, 0]} castShadow>
-        <boxGeometry args={[RAIL_THICKNESS, RAIL_THICKNESS, BED * 2 + 0.1]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
-      </mesh>
-      <mesh position={[BED, FRAME_TOP, 0]} castShadow>
-        <boxGeometry args={[RAIL_THICKNESS, RAIL_THICKNESS, BED * 2 + 0.1]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
-      </mesh>
-
-      {/* two Z-guide rods, inset from the outer frame and spanning its
-          full height — what the gantry actually rides on */}
-      {[-Z_ROD_X, Z_ROD_X].map((x) => (
-        <mesh key={x} position={[x, (FRAME_TOP + FRAME_BOTTOM) / 2, 0]} castShadow>
-          <boxGeometry args={[0.05, postHeight, 0.05]} />
-          <meshStandardMaterial color="#334155" roughness={0.25} metalness={0.7} />
-        </mesh>
-      ))}
-
-      {/* gantry: rail + print head rise together on the Z rods as the
-          print builds, so the head is always physically flush against the
-          rail instead of floating apart from it at a different height */}
-      <group ref={gantryRef} position={[0, GANTRY_MIN_Y, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[Z_ROD_X * 2 + 0.1, RAIL_THICKNESS, RAIL_THICKNESS]} />
-          <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} transparent />
-        </mesh>
-
-        {/* the print head — a real hotend stack (carriage clip, finned
-            heatsink, side cooling fan, heater block, brass nozzle glowing
-            hot at the tip) instead of a single sliding cube */}
-        <group ref={headSweepRef} position={[0, -0.06, 0]}>
-          <mesh castShadow>
-            <boxGeometry args={[0.2, 0.05, 0.16]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.4} metalness={0.6} transparent />
-          </mesh>
-
-          <mesh position={[0, -0.07, 0]} castShadow>
-            <cylinderGeometry args={[0.045, 0.045, 0.09, 12]} />
-            <meshStandardMaterial color="#cbd5e1" roughness={0.35} metalness={0.85} transparent />
-          </mesh>
-          {[-0.04, -0.07, -0.1].map((y) => (
-            <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-              <torusGeometry args={[0.052, 0.008, 8, 16]} />
-              <meshStandardMaterial color="#e2e8f0" roughness={0.3} metalness={0.9} transparent />
-            </mesh>
-          ))}
-
-          <PrintHeadFan position={[0.09, -0.07, 0]} />
-
-          <mesh position={[0, -0.145, 0]} castShadow>
-            <boxGeometry args={[0.09, 0.06, 0.09]} />
-            <meshStandardMaterial color="#111827" roughness={0.4} metalness={0.5} transparent />
-          </mesh>
-
-          <mesh position={[0, -0.205, 0]}>
-            <coneGeometry args={[0.024, 0.06, 12]} />
-            <meshStandardMaterial
-              color="#b45309"
-              roughness={0.3}
-              metalness={0.7}
-              emissive="#f97316"
-              emissiveIntensity={0.5}
-              transparent
-            />
-          </mesh>
-          <mesh position={[0, -0.238, 0]}>
-            <sphereGeometry args={[0.009, 8, 8]} />
-            <meshStandardMaterial
-              color="#fbbf24"
-              emissive="#fbbf24"
-              emissiveIntensity={1.4}
-              transparent
-            />
-          </mesh>
-        </group>
-      </group>
-    </group>
-  );
-}
-
-function BuildPlate() {
-  return (
-    <mesh position={[0, -0.9, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry args={[3.6, 3.6]} />
-      <meshStandardMaterial color="#0f172a" roughness={0.5} metalness={0.5} />
-    </mesh>
-  );
-}
-
 /**
- * A scroll-scrubbed scene: the real Benchy model builds up on a stylized
- * printer rig while the camera orbits around it (POV drifting around the
- * model, not the model spinning in place), then — in the final stretch of
- * scroll — hops off the plate in an arc and drops out of frame, handing
- * off into the water section below. Text panels swap alongside it at
- * fixed progress checkpoints.
+ * A scroll-scrubbed scene: the real Benchy model sails across a rippling
+ * water surface for the entire section (no printer/build-up — it's simply
+ * afloat from the start). The camera orbits close around it, settles into
+ * a low front-on view with the water clearly under the hull, then pulls
+ * back and up into a wide "boat on the ocean" establishing shot as the
+ * section hands off to the water/sign-in content below. Text panels swap
+ * alongside it at fixed progress checkpoints, independent of the camera
+ * choreography.
  *
  * Uses CSS `position: sticky` on the inner viewport-height layer, driven
  * by a tall (400vh) wrapper, rather than GSAP's `pin: true`. An earlier
@@ -278,8 +185,16 @@ export default function BenchyScrollScene() {
         scrub: 0.4,
         onUpdate: (self) => {
           progressRef.current = self.progress;
-          const hopP = THREE.MathUtils.clamp((self.progress - BUILD_END) / (1 - BUILD_END), 0, 1);
-          stickyRef.current?.style.setProperty("--hop-progress", String(hopP));
+          // Fades in the DOM water/foam overlay only in the last stretch
+          // of scroll, bridging the 3D scene's own water into the CSS
+          // WaterFlow section immediately below it.
+          const FINALE_START = 0.88;
+          const finaleP = THREE.MathUtils.clamp(
+            (self.progress - FINALE_START) / (1 - FINALE_START),
+            0,
+            1,
+          );
+          stickyRef.current?.style.setProperty("--finale-progress", String(finaleP));
           const nextStage = Math.min(STAGES.length - 1, Math.floor(self.progress * STAGES.length));
           setStage((prev) => (prev === nextStage ? prev : nextStage));
         },
@@ -315,31 +230,31 @@ export default function BenchyScrollScene() {
 
         <div className="absolute inset-0">
           <Canvas shadows camera={{ position: [0, 1, 3.4], fov: 42 }}>
-            <ambientLight intensity={0.6} />
-            <directionalLight position={[3, 5, 2]} intensity={1.4} castShadow />
+            <ambientLight intensity={0.65} />
+            <directionalLight position={[3, 5, 2]} intensity={1.3} castShadow />
             <directionalLight position={[-3, 2, -2]} intensity={0.35} color="#4ade80" />
             <Suspense fallback={null}>
               <ScrollBenchy progressRef={progressRef} />
-              <PrinterRig progressRef={progressRef} />
+              <WaterSurface />
             </Suspense>
-            <BuildPlate />
           </Canvas>
         </div>
 
-        {/* Water/foam overlay for the finale — opacity driven by
-            --hop-progress (0 to 1), set imperatively in onUpdate above so
-            this never triggers a React re-render on scroll. */}
+        {/* Water/foam overlay bridging into the WaterFlow section below —
+            opacity driven by --finale-progress, set imperatively in
+            onUpdate above so this never triggers a React re-render on
+            scroll. */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            opacity: "var(--hop-progress, 0)",
+            opacity: "var(--finale-progress, 0)",
             background:
               "linear-gradient(180deg, transparent 0%, var(--water-mid) 55%, var(--water-deep) 100%)",
           }}
         />
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-40"
-          style={{ opacity: "var(--hop-progress, 0)" }}
+          style={{ opacity: "var(--finale-progress, 0)" }}
         >
           <svg viewBox="0 0 800 80" preserveAspectRatio="none" className="h-full w-full">
             <path

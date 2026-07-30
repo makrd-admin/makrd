@@ -100,7 +100,7 @@ export default function Mascot() {
   return (
     <div className="fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
       {isOpen && (
-        <div className="glass-strong flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-3xl p-5 sm:w-80">
+        <div className="glass-frost flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-3xl p-5 sm:w-80">
           <div className="flex items-start gap-2">
             <div className="shrink-0">
               <Skipper3DInline size={72} />
@@ -115,10 +115,7 @@ export default function Mascot() {
               Ask me something
             </p>
             {FAQ.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl bg-black/5 px-3 py-2 dark:bg-white/5"
-              >
+              <details key={item.q} className="glass-frost-item group rounded-xl px-3 py-2">
                 <summary className="cursor-pointer text-sm font-medium marker:content-none">
                   {item.q}
                 </summary>
@@ -132,7 +129,7 @@ export default function Mascot() {
       <button
         onClick={() => setIsOpen((o) => !o)}
         aria-label={isOpen ? "Close Skipper" : "Open Skipper, the maKrd mascot"}
-        className="glass-strong flex items-center gap-2 rounded-full p-2 pr-4 shadow-lg transition-transform hover:scale-105"
+        className="glass-frost flex items-center gap-2 rounded-full p-2 pr-4 shadow-lg transition-transform hover:scale-105"
       >
         <Skipper3DInline size={40} />
         {!isOpen && (

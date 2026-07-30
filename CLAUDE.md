@@ -72,6 +72,37 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-30 (later)** — Redesigned the landing hero's scroll narrative per Mohit's
+  feedback that the scale-up-in-place didn't read as "being printed," and per his
+  fuller description of what he actually wanted: no printer at all, just the benchy
+  sailing through water the whole time, camera changing angle/distance as you scroll.
+  Removed `PrinterRig`/`PrintHeadFan`/`BuildPlate` from `benchy-scroll-scene.tsx`
+  entirely (the printer-rig joint/nozzle fixes from earlier today are now moot — the rig
+  itself is gone). Added `WaterSurface`: a large rippling plane (sine-displaced vertex
+  positions each frame, no shader) the benchy sails across for the *entire* section, not
+  just a finale overlay. `ScrollBenchy` now drives both the boat and the camera off one
+  shared `target` position per frame: the boat appears already afloat (no build-up),
+  drifts slowly across the water (x/z position tied to scroll progress) and
+  bobs/sways continuously, while the camera runs through three stages —
+  `ORBIT_END=0.4` (close orbit around it as it settles), `FRONT_AT=0.7` (converges to a
+  low front-on view, water clearly under the hull, benchy still large/close), then pulls
+  back and up into a wide "boat on the ocean" establishing shot for the remainder.
+  Renamed the DOM finale overlay's driving variable from `--hop-progress` to
+  `--finale-progress` and narrowed its window to the last 12% of scroll (was tied to a
+  20%-of-scroll hop arc that no longer exists) — it now just fades in to bridge the 3D
+  scene's water into the CSS `WaterFlow` section immediately below.
+  Verified live via claude-in-chrome against a local dev server: printer confirmed gone,
+  orbit stage reads as the camera circling the floating boat, front-view stage shows a
+  clear horizon line with the boat sitting large in the water, and jumping to ~88%
+  scroll (via `window.scrollTo` to a computed pixel offset, since coarse scroll-wheel
+  steps kept skipping past this narrow window) confirmed the wide scenery shot — small
+  boat, big ocean, matches what Mohit described. No console errors. `pnpm typecheck`/
+  `lint`/`format:check`/`build` all pass. STAGES text copy (the 4 kicker/title/body
+  panels) left unchanged — Mohit's ask was about the 3D staging, not the marketing copy,
+  and the existing copy doesn't reference the printer rig specifically. **Not yet
+  pushed or deployed** — holding for Mohit to see it first, same as the pattern for
+  every visual change this session.
+
 - **2026-07-30** — Fixed a real geometry bug Mohit spotted: the printer rig's frame
   looked "broken, not joint[ed]." It was — the crossbar sat at `z=0` while the four
   corner posts were at `z=±1.7`, so it never touched any of them, just floated in the
@@ -97,10 +128,11 @@ _Newest first. One or two lines per entry — what changed and why, not a full d
   zoomed into the frame corners and confirmed the top rail now visibly meets the
   uprights, and zoomed into the print head mid-build to confirm it reads as a real
   hotend (heatsink, fan, nozzle) sitting flush under the rail rather than a floating
-  cube. `pnpm typecheck`/`lint`/`format:check`/`build` all pass. **Still not pushed or
-  deployed** — this is stacked on top of yesterday's not-yet-shipped green/water/cursor
-  changes; all of it is waiting on Mohit's go-ahead before it goes to
-  `makrd.vercel.app`.
+  cube. `pnpm typecheck`/`lint`/`format:check`/`build` all pass.
+  **Shipped**, along with yesterday's green/water/cursor changes, once Mohit gave the
+  go-ahead — single commit covering both days' landing-page work, pushed to `main` and
+  `mohit`, deployed via `vercel build --prod` + `vercel deploy --prebuilt --prod`,
+  verified live on `https://makrd.vercel.app` (green theme confirmed rendering).
 
 - **2026-07-29 (late afternoon)** — Reverted straight back to green after the vibrant
   push earlier today — Mohit didn't like it on the landing page specifically, wanted
@@ -156,9 +188,9 @@ _Newest first. One or two lines per entry — what changed and why, not a full d
   accessibility rule (present before this session, left untouched) correctly hides all
   cursor-following motion for — not a bug, just this particular browser's a11y setting;
   should render normally for Mohit's own browser. `pnpm typecheck`/`lint`/
-  `format:check`/`build` all pass (23 routes). **Not yet pushed or redeployed** — held
-  here pending Mohit's okay on the green tone/water look before shipping to
-  `makrd.vercel.app`.
+  `format:check`/`build` all pass (23 routes). **Shipped the next day (2026-07-30)**
+  alongside the printer-rig fix below, once Mohit confirmed the look — see that entry
+  for the push/deploy details.
 
 - **2026-07-29 (afternoon)** — Finally got real browser access and clicked through the
   live site — closing out the "unverified in browser" caveat that had been sitting on
