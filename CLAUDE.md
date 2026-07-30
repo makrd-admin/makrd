@@ -72,6 +72,31 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-07-30 (later night)** — Real Benchy on the login screen, a mobile nav drawer, and
+  a live data point on the session-persistence bug.
+  **`/login` was still showing the old flat SVG loader.** Missed in every earlier "use the
+  real model everywhere" pass — swapped `PrinterLoader` for `SkipperLoadingScene`. Deleted
+  `components/printer-loader.tsx` (no remaining usages). Verified live: the real 3D model
+  with its green fresnel glow now renders on the sign-in card (took ~3s to appear — the
+  WebGL chunk loading, not a bug).
+  **Added a mobile nav drawer.** The nav pill's link row was scrolling horizontally on
+  phone widths instead of fitting, burying most routes. Below `sm`, the link row is now
+  hidden and a hamburger button (`components/mobile-nav.tsx`) opens a slide-in drawer with
+  every link at full width. Exported `LINKS`/`isLinkActive` from `nav-links.tsx` so the
+  desktop row and the drawer share one source of truth. **Not visually confirmed** — see
+  below.
+  **Lost the authenticated browser session mid-verification**, possibly a live instance of
+  the still-open session-persistence bug. Tried `resize_window` to test the drawer at a
+  phone width; it silently didn't affect the real viewport (`window.innerWidth` stayed at
+  1920 after a "successful" 400x850 resize — a tooling limitation, not a code issue), and
+  by the next navigation the tab had been signed out of `/dashboard` back to `/login`. Did
+  not attempt to sign back in — that's not something to do on the user's behalf. **The
+  mobile drawer itself is unverified visually** — code passes typecheck/lint/build and
+  reuses the exact `hidden sm:flex`/`sm:hidden` pattern already proven for the desktop nav
+  row in this same file, but Mohit should confirm on an actual phone.
+  Pushed to `main` and `mohit`, redeployed via the manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow, verified live on `https://makrd.vercel.app`.
+
 - **2026-07-30 (night)** — `claude-in-chrome` finally connected this session — first real
   browser verification since 2026-07-29 afternoon. Used it to catch and fix a bug my own
   reasoning had missed, then landed three more requested changes.
