@@ -4,7 +4,6 @@ import BenchyScrollScene from "@/components/benchy-scroll-scene";
 import Reveal from "@/components/reveal";
 import WaterFlow from "@/components/water-flow";
 import LandingTheme from "@/components/landing-theme";
-import { PRINTER_MODELS } from "@/lib/printer-models";
 
 const STEPS = [
   {
@@ -26,8 +25,6 @@ const ROADMAP = [
   "Automated print finishing — resin-coating and polishing to a professional finish",
   "A fully-modular, ultra-affordable printer for the network",
 ];
-
-const FEATURED_PRINTERS = PRINTER_MODELS.slice(0, 4);
 
 export default async function Home() {
   const supabase = await createClient();
@@ -59,29 +56,6 @@ export default async function Home() {
                 </span>
                 <h3 className="font-semibold">{step.title}</h3>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">{step.body}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-10">
-        <Reveal>
-          <h2 className="mb-2 text-lg font-semibold">Meet the network</h2>
-          <p className="mb-8 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
-            Every printer on maKrd is owned and run by a real member — not a warehouse. Here&apos;s
-            a slice of what&apos;s already registered.
-          </p>
-        </Reveal>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURED_PRINTERS.map((printer, i) => (
-            <Reveal key={`${printer.make}-${printer.model}`} delayMs={i * 100}>
-              <div className="glass flex h-full flex-col gap-1 rounded-2xl p-5">
-                <p className="font-semibold">{printer.make}</p>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">{printer.model}</p>
-                <p className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
-                  Build volume: {printer.buildVolume}
-                </p>
               </div>
             </Reveal>
           ))}

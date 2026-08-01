@@ -8,18 +8,15 @@ export default function LogoMark({ size = 24 }: { size?: number }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <defs>
-        <linearGradient id="logoGradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="var(--accent-from)" />
-          <stop offset="50%" stopColor="var(--accent-via)" />
-          <stop offset="100%" stopColor="var(--accent-to)" />
-        </linearGradient>
-      </defs>
-      {/* stacked print layers, narrowing upward */}
-      <rect x="4" y="24" width="24" height="4" rx="1.5" fill="url(#logoGradient)" />
-      <rect x="7" y="18" width="18" height="4" rx="1.5" fill="url(#logoGradient)" opacity="0.85" />
-      <rect x="10" y="12" width="12" height="4" rx="1.5" fill="url(#logoGradient)" opacity="0.7" />
-      <rect x="13" y="6" width="6" height="4" rx="1.5" fill="url(#logoGradient)" opacity="0.55" />
+      {/* Same mark as the browser tab icon (app/icon.svg) — kept in sync by hand. */}
+      <circle cx="16" cy="16" r="16" fill="#16a34a" />
+      <rect x="14.5" y="5.5" width="3" height="6.5" rx="1" fill="#ffffff" />
+      <rect x="11" y="11" width="8" height="8.5" rx="1.3" fill="#ffffff" />
+      <circle cx="15" cy="15" r="1.35" fill="#16a34a" />
+      <path
+        d="M5 19.5 L27 19.5 Q29.3 19.5 26.3 22.5 L16 25 L6 22.5 Q2.7 19.5 5 19.5 Z"
+        fill="#ffffff"
+      />
     </svg>
   );
 }
