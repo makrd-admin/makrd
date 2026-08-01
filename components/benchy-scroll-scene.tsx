@@ -194,8 +194,13 @@ function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> })
       // the hull, benchy still large/close
       const t2 = THREE.MathUtils.clamp((p - ORBIT_END) / (FRONT_AT - ORBIT_END), 0, 1);
       const angle = THREE.MathUtils.lerp(Math.PI * 1.6, Math.PI * 2, t2);
-      const radius = THREE.MathUtils.lerp(3.0, 2.2, t2);
-      const height = THREE.MathUtils.lerp(0.9, 0.3, t2);
+      // Radius/height floors kept above the orbit stage's own minimums —
+      // closing in further than this brings the camera close enough to the
+      // cabin wall that its portholes/archway cutout (real geometry on the
+      // actual Benchy model) fill the frame and read as broken/hollow rather
+      // than as a boat, since the hull curve and waterline fall out of shot.
+      const radius = THREE.MathUtils.lerp(3.0, 2.8, t2);
+      const height = THREE.MathUtils.lerp(0.9, 0.55, t2);
       camera.position.set(
         target.current.x + Math.sin(angle) * radius,
         target.current.y + height,
@@ -204,8 +209,8 @@ function ScrollBenchy({ progressRef }: { progressRef: React.RefObject<number> })
     } else {
       // stage 3: pull back and up into a wide ocean-scenery shot
       const t3 = THREE.MathUtils.clamp((p - FRONT_AT) / (1 - FRONT_AT), 0, 1);
-      const radius = THREE.MathUtils.lerp(2.2, 10, t3);
-      const height = THREE.MathUtils.lerp(0.3, 5.2, t3);
+      const radius = THREE.MathUtils.lerp(2.8, 10, t3);
+      const height = THREE.MathUtils.lerp(0.55, 5.2, t3);
       camera.position.set(target.current.x, target.current.y + height, target.current.z + radius);
     }
     camera.lookAt(target.current.x, target.current.y, target.current.z);
