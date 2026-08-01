@@ -36,8 +36,18 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAppRoute = !pathname.startsWith("/api") && !pathname.startsWith("/auth");
+  // Next's own background prefetch requests (fired for every visible <Link>
+  // on a page — there are dozens across the nav/dashboard/job lists) carry
+  // this header. Skipping them here isn't just about not inflating the visit
+  // log: it also means a page with many links doesn't fan out into a burst
+  // of extra profiles-table round trips on every render, which was making
+  // this middleware slow enough to widen the window for a known @supabase/ssr
+  // race (concurrent requests refreshing the same rotating token, one wins
+  // and the other gets signed out) — a likely contributor to reports of the
+  // site failing to load / signing out unexpectedly.
+  const isPrefetch = !!request.headers.get("next-router-prefetch");
 
-  if (user && isAppRoute) {
+  if (user && isAppRoute && !isPrefetch) {
     // Every signed-in member must have a unique username before doing
     // anything else — gate every route except the page that sets one.
     if (pathname !== "/complete-profile") {
@@ -54,11 +64,9 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    // Log real navigations only — skip Next's own background prefetch
-    // requests (they carry this header) so "who visited what" isn't
-    // inflated by links the user merely hovered over or scrolled past.
-    if (request.method === "GET" && !request.headers.get("next-router-prefetch")) {
-      await supabase.rpc("log_page_view", { p_path: pathname });
+    if (request.method === "GET") {
+      // Fire-and-forget: logging a visit shouldn't hold up the response.
+      void supabase.rpc("log_page_view", { p_path: pathname });
     }
   }
 

@@ -36,7 +36,7 @@ export default async function DashboardPage({
 
   const [{ data: profile }, { data: printers }, { data: myJobs }, { data: jobsImPrinting }] =
     await Promise.all([
-      supabase.from("profiles").select("points_balance").eq("id", user.id).single(),
+      supabase.from("profiles").select("points_balance, has_seen_tour").eq("id", user.id).single(),
       supabase
         .from("printers")
         .select("*")
@@ -82,7 +82,7 @@ export default async function DashboardPage({
               Everything you own and everything you owe, in one place.
             </p>
           </div>
-          <OnboardingTour />
+          <OnboardingTour hasSeenTour={profile?.has_seen_tour ?? false} />
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {stats.map((stat) => (

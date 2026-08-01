@@ -113,8 +113,8 @@ export type Database = {
           quantity?: number;
           requester_id?: string;
           status?: string;
-          weight_grams?: number;
           updated_at?: string;
+          weight_grams?: number;
         };
         Relationships: [
           {
@@ -127,6 +127,35 @@ export type Database = {
           {
             foreignKeyName: "jobs_requester_id_fkey";
             columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      page_views: {
+        Row: {
+          created_at: string;
+          id: string;
+          path: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          path: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          path?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "page_views_user_id_fkey";
+            columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
@@ -279,6 +308,7 @@ export type Database = {
         Row: {
           created_at: string;
           display_name: string | null;
+          has_seen_tour: boolean;
           id: string;
           is_admin: boolean;
           location: string | null;
@@ -289,6 +319,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           display_name?: string | null;
+          has_seen_tour?: boolean;
           id: string;
           is_admin?: boolean;
           location?: string | null;
@@ -299,6 +330,7 @@ export type Database = {
         Update: {
           created_at?: string;
           display_name?: string | null;
+          has_seen_tour?: boolean;
           id?: string;
           is_admin?: boolean;
           location?: string | null;
@@ -307,35 +339,6 @@ export type Database = {
           username?: string | null;
         };
         Relationships: [];
-      };
-      page_views: {
-        Row: {
-          created_at: string;
-          id: string;
-          path: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          path: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          path?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "page_views_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-        ];
       };
     };
     Views: {
@@ -361,6 +364,12 @@ export type Database = {
           status: string;
           updated_at: string;
           user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "points_purchases";
+          isOneToOne: true;
+          isSetofReturn: false;
         };
       };
       log_page_view: { Args: { p_path: string }; Returns: undefined };

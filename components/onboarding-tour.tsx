@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-const SEEN_KEY = "makrd_tour_seen";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const STEPS = [
   {
@@ -27,24 +26,25 @@ const STEPS = [
   },
 ];
 
-export default function OnboardingTour() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function OnboardingTour({ hasSeenTour }: { hasSeenTour: boolean }) {
+  // Seeded from the server-fetched profile, not localStorage — localStorage
+  // doesn't survive private browsing, cleared site data, or a different
+  // device, all of which read as "the tour keeps coming back" even though
+  // the old client-only gating logic was itself correct.
+  const [isOpen, setIsOpen] = useState(!hasSeenTour);
   const [step, setStep] = useState(0);
 
-  useEffect(() => {
-    // Reads localStorage (unavailable during SSR) to decide whether to
-    // auto-open on first visit — this one-time sync-from-external-system
-    // read is the case React's effect docs call out as legitimate.
-    if (!window.localStorage.getItem(SEEN_KEY)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOpen(true);
-    }
-  }, []);
-
   function close() {
-    window.localStorage.setItem(SEEN_KEY, "1");
     setIsOpen(false);
     setStep(0);
+    if (!hasSeenTour) {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("profiles").update({ has_seen_tour: true }).eq("id", user.id).then();
+        }
+      });
+    }
   }
 
   function open() {
