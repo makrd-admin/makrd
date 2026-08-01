@@ -72,6 +72,125 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-08-01 (latest)** — Follow-up bug-fix pass after shipping the admin/username
+  batch, plus a small favicon ask. Four separate changes, each verified and deployed
+  independently.
+  **Onboarding tour was reappearing on every visit.** It was gated by localStorage only
+  — correct logic, but localStorage doesn't survive private browsing, cleared site
+  data, or a different device, all of which read as "it keeps coming back." Added
+  `profiles.has_seen_tour` (migration `20260801000000_has_seen_tour.sql`) and moved the
+  gate server-side: `app/dashboard/page.tsx` fetches it and passes it into
+  `OnboardingTour`, which now writes it back via a plain client-side `profiles` update
+  on close (no protection trigger needed — same reasoning as printer status: a user
+  marking their own tour seen isn't a fraud vector).
+  **Found the likely cause of "/complete-profile won't load" and probably of the
+  long-standing sign-out bug too.** Checked Supabase auth logs and saw a sustained burst
+  of `GET /user` calls (several per second, for minutes) plus repeated login/
+  token_revoked/token_refreshed cycles for the same accounts — the signature of
+  concurrent requests racing to refresh the same rotating Supabase token, where the
+  loser gets signed out. The new username-gate middleware
+  (`lib/supabase/middleware.ts`) was very possibly making this worse: it ran a Postgres
+  round trip (a `profiles` select, plus a `page_views` insert) on *every* request,
+  including Next's own background prefetches — and a page with many `<Link>`s (nav,
+  dashboard quick actions, job lists) fires a lot of those. More time spent per request
+  means more concurrent requests piling up, which widens the race window. Fixed by
+  skipping the whole gate-and-log block for prefetch requests (`next-router-prefetch`
+  header — only real navigations need it) and switching the page-view insert to
+  fire-and-forget instead of `await`ed. Not proven as the sole root cause of the
+  session-persistence bug tracked since 2026-07-28, but a real fix regardless (strictly
+  less DB load per request), and the specific "/complete-profile won't load" symptom
+  should be gone.
+  **New favicon**, per direct request ("white benchy in a green circle" instead of the
+  stock Next.js/Vercel default). Added `app/icon.svg` (Next's file-based icon
+  convention — no new dependency) — a hand-drawn white tugboat silhouette (funnel,
+  cabin, hull curve) on a `#16a34a` green circle, checked legible down to 16px via a
+  local preview before shipping. Takes priority over the old `favicon.ico` in the
+  `<head>` for virtually every modern browser; left the old file in place as a legacy
+  fallback rather than trying to hand-encode a replacement `.ico` (would've needed a new
+  image-processing dependency for a tab icon).
+  **Landing hero's close-up camera stage looked broken.** Screenshotted the live scroll
+  sequence per Mohit's "review the whole site, use claude in chrome" ask and found the
+  "low front-on" stage (`benchy-scroll-scene.tsx`) brought the camera close enough that
+  the cabin wall — portholes and the real Benchy's open archway cutout, actual geometry,
+  not a decimation artifact — filled the entire frame with the hull/water line out of
+  shot. Read as hollow/broken rather than as a boat. Backed the radius/height floors off
+  (2.2→2.8, 0.3→0.55) and matched stage 3's starting values so there's no visual jump at
+  the handoff. Verified live via a local dev server before shipping — hull curve and
+  water are now in frame at the closest point.
+  **On "old stuff shows, then new stuff appears every time I open the site"**: checked
+  for a service worker or PWA manifest (none exist) and confirmed the HTML response is
+  `cache-control: no-store` and JS/CSS chunks are content-hashed per build, so the app
+  itself has no mechanism to serve stale content mixed with new. Best explanation is
+  ordinary mobile-browser tab-restore behavior (showing a cached screenshot of the tab
+  instantly on reopen, then replacing it with the live re-render) — not a code bug.
+  Flagged to Mohit rather than guessing at further fixes; worth revisiting only if it
+  keeps happening after this deploy (the middleware fix above should also make real
+  navigations feel snappier regardless).
+  Verified: `pnpm typecheck`/`lint`/`format:check`/`build` all pass after each change;
+  migration applied live via Supabase MCP. Four separate commits, each pushed to `main`
+  and `mohit` and deployed via the standard manual `vercel build --prod` +
+  `vercel deploy --prebuilt --prod` workflow, verified live on `https://makrd.vercel.app`
+  after each.
+
+- **2026-07-30 (latest)** — Real admin role, mandatory unique usernames, and signed-in
+  visit logging — the auth-touching batch Mohit asked for directly ("access the site
+  with admin... username cannot be used more than once... view who all are visiting").
+  Asked first via AskUserQuestion since this is squarely inside CLAUDE.md's
+  ask-before-auth gate; Mohit chose **"Real admin role"** (not a fixed-credential
+  backdoor — I flagged that option as a security risk and it was not chosen, so it
+  should not be built even if raised again casually without a fresh explicit
+  confirmation), **"Everyone, going forward"** for username scope (existing accounts
+  included, not just new email/password signups), and **"who specifically (signed-in
+  users)"** for the visitor-tracking scope (not aggregate/anonymous analytics).
+  **Admin role**: `profiles.is_admin boolean`, protected from client writes by widening
+  the existing `protect_points_balance` trigger (same "current_user = authenticated"
+  guard already used for points_balance) rather than adding a second trigger. Granted
+  directly via SQL to Mohit's own account only — he's the sole admin right now.
+  `requireAdmin()` in `lib/auth.ts` gates the new `/admin` page (redirects non-admins to
+  `/dashboard`); an "Admin" nav link only renders for him (`nav-links.tsx`,
+  `navLinksFor(isAdmin)`, shared between the desktop pill and the mobile drawer).
+  **Usernames**: unique (case-insensitive, via a functional index on `lower(username)`
+  rather than adding the `citext` extension for one column), format-checked
+  (`^[a-zA-Z0-9_]{3,20}$`), nullable at the DB level on purpose — existing rows can't be
+  auto-backfilled with a value, so uniqueness is enforced going forward via a mandatory
+  gate instead of a NOT NULL migration that would break instantly. New
+  `set_username(text)` RPC (SECURITY DEFINER) re-checks uniqueness server-side so two
+  simultaneous claims of the same name can't both win a client-side-only race. Every
+  signed-in request now passes through an extra check in
+  `lib/supabase/middleware.ts` (already the place session refresh happens): no
+  username → redirect to `/complete-profile`, a small form
+  (`app/complete-profile/{page,actions,username-form}.tsx`) that's the one page
+  excluded from its own gate (infinite-loop guard) — `/api` and `/auth` paths are also
+  excluded so the OAuth callback itself is never intercepted. **This affects all 9
+  existing real accounts**, including Mohit's — everyone gets routed to pick a username
+  once before they can use anything else, per his "everyone" answer. Username now
+  displays in place of `display_name` (falling back to it) across `/community`,
+  community chat, and both `/messages` views.
+  **Visit logging**: new `page_views` table (user_id, path, created_at), RLS restricted
+  to admin-only SELECT, written via a `log_page_view(text)` SECURITY DEFINER RPC (never
+  a direct client insert policy, so a client can't forge visits under someone else's
+  name) called from the same middleware pass — filtered to real GETs from signed-in
+  users, explicitly skipping Next's own link-hover prefetch requests
+  (`next-router-prefetch` header) so the log reflects actual navigation, not hovers.
+  `/admin` shows both a "most recently seen" summary per member and a raw recent-
+  activity table (last 200 views).
+  Bundled in the same deploy: the mobile nav drawer's background, which despite two
+  earlier attempts (`.glass-frost`, then `bg-[var(--background)]`) was still reported
+  unreadable — replaced the CSS-variable version with literal
+  `bg-white dark:bg-neutral-950` (no indirection) as a third, more forceful fix.
+  Verified: `pnpm typecheck`/`lint`/`format:check`/`build` all pass (25 routes, +`/admin`
+  +`/complete-profile`); both migrations applied live via Supabase MCP and confirmed
+  clean via `get_advisors`; confirmed live post-deploy that `/admin` and
+  `/complete-profile` both correctly redirect signed-out visitors to `/login` (checked
+  the embedded redirect marker in the response body, same method used throughout this
+  project since the root `loading.tsx` made plain 307s unavailable for curl-testing).
+  **Could not click through the actual username-picker or admin dashboard live** — the
+  authenticated browser session was lost earlier this session (see the entry below) and
+  wasn't re-established; this is reasoned-through and locally verified but not
+  eyeballed in a real signed-in browser. Pushed to `main` and `mohit`, deployed via the
+  standard manual `vercel build --prod` + `vercel deploy --prebuilt --prod` workflow,
+  live on `https://makrd.vercel.app`.
+
 - **2026-07-30 (very late)** — Mohit confirmed the mobile drawer from the previous entry
   actually opens correctly (good — the "not visually confirmed" caveat there is resolved),
   but couldn't read the links: `.glass-frost` is still translucent/blurred, not opaque
