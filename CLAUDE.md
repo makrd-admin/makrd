@@ -72,6 +72,53 @@ so these can slot in later, but do not implement them now.
 ## Progress Log
 _Newest first. One or two lines per entry — what changed and why, not a full diary._
 
+- **2026-08-01 (later)** — Custom domain live, logo refresh, landing page trim, and the
+  actual root cause of "old stuff shows before new stuff" finally found and fixed.
+  **`makrd.in` is live.** Bought on GoDaddy; hit real friction getting there — `.in`
+  domains require NIXI/INRegistry KYC before the registrar unlocks DNS editing at all
+  (GoDaddy showed a locked default "WebsiteBuilder Site" A record and an uneditable
+  `www` CNAME until Mohit's KYC cleared). Added via `vercel domains add makrd.in` /
+  `www.makrd.in`, then plain `A @ 76.76.21.21` + `CNAME www cname.vercel-dns.com.`
+  records at GoDaddy (not a nameserver handoff, despite that being discussed as a
+  fallback). `makrd.in` now 308-redirects to `www.makrd.in`, which serves the real site
+  over a valid cert — confirmed via curl and `vercel domains inspect`.
+  **Redrew the Benchy mark** (`app/icon.svg`, used both as the tab favicon and by
+  `components/logo-mark.tsx`, which renders in the nav on every page) — a clearer
+  side-profile hull with a porthole, replacing the old front-on cabin/funnel glyph from
+  earlier today. Same mark, two places, kept in sync by hand (no shared source file —
+  simple enough that a build step felt like overkill).
+  **Removed the landing page's "Meet the network" printer showcase** per direct
+  request — it only ever pulled from the static `PRINTER_MODELS` catalog (generic
+  reference specs), never real registered printers, so it wasn't showing what it looked
+  like it was showing.
+  **Found the real cause of "old stuff shows, then new stuff appears every time."**
+  Mohit confirmed it happened on a phone that had *never opened the site before* —
+  which ruled out every caching/tab-restore theory from earlier today at a stroke (no
+  prior visit means no prior cache, full stop). The actual cause:
+  `skipper-loading-scene.tsx` lazy-loads the WebGL Skipper model via `next/dynamic`
+  (a real, meaningfully-sized JS chunk), and while that chunk fetches, the fallback it
+  showed was `PrinterLoaderRealistic` — the old pre-redesign "printer with a cartoon
+  face building on a plate" illustration that was supposedly retired from the rest of
+  the app months ago. So on *every single page load*, on *every device*, visitors
+  briefly saw genuinely outdated art before the current 3D model swapped in — not a
+  caching bug at all, just a stale fallback nobody had gone back to update after the
+  redesign. Replaced it with a plain pulsing `LogoMark` (can't go stale the same way —
+  it's the current brand mark, not a separate illustration) and deleted
+  `printer-loader-realistic.tsx` plus its now-fully-orphaned globals.css animations
+  (`.printer-loader-*`/`.realistic-loader-*` and their keyframes — confirmed via grep
+  that nothing else referenced them). **Lesson for next time a "shows old version"
+  report comes in: check every `next/dynamic({ loading: ... })` fallback in the
+  render path first** — a loading fallback is exactly the kind of thing that gets
+  wired up once and then silently drifts out of sync with redesigns, since it only
+  renders for a few hundred ms and is easy to forget exists.
+  Verified: `pnpm typecheck`/`lint`/`format:check`/`build` all pass after each change.
+  `claude-in-chrome` was disconnected for the logo/loading-fallback changes specifically
+  (tried reconnecting twice, no luck) — those two shipped on code review + a clean build
+  only, not eyeballed live; the domain and landing-page-section-removal work was
+  verified via curl. Three separate commits, each pushed to `main`/`mohit` and deployed
+  via the standard manual `vercel build --prod` + `vercel deploy --prebuilt --prod`
+  workflow, confirmed live on both `https://makrd.vercel.app` and `https://www.makrd.in`.
+
 - **2026-08-01 (latest)** — Follow-up bug-fix pass after shipping the admin/username
   batch, plus a small favicon ask. Four separate changes, each verified and deployed
   independently.
